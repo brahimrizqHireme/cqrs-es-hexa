@@ -1,0 +1,16 @@
+imports:
+  - { resource: parameters.yml }
+services:
+  _instanceof:
+    CQRS\Common\Domain\Contract\Command\CommandHandlerInterface:
+      tags:
+        - { name: messenger.message_handler, bus: command.bus }
+    CQRS\Common\Domain\Contract\Query\QueryHandlerInterface:
+      tags:
+        - { name: messenger.message_handler, bus: query.bus }
+
+  CQRS\Common\Infrastructure\Model\Database\MongodbClient:
+    factory: [null, 'create']
+    arguments:
+      $mongodbUrl: '%MONGODB_URL%'
+      $mongodbDb: '%MONGODB_DB%'
