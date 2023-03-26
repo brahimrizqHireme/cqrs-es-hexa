@@ -1,0 +1,8 @@
+controllers:
+  resource: '../Infrastructure/Http/V1/*'
+  type: annotation
+  prefix: /api/v1
+
+homepage:
+  path: /
+  controller: CQRS\Common\Infrastructure\Http\BaseApiController::version
