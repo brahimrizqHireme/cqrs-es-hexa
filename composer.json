@@ -3,6 +3,21 @@
     "license": "proprietary",
     "minimum-stability": "stable",
     "prefer-stable": true,
+    "keywords": [
+        "ddd",
+        "cqrs",
+        "EventSourcing",
+        "eventsauce",
+        "service-bus",
+        "message-driven",
+        "symfony 6",
+        "hexagonal",
+        "event",
+        "messanger",
+        "event",
+        "mongodb",
+        "projector"
+    ],
     "require": {
         "php": ">=8.1",
         "ext-ctype": "*",
