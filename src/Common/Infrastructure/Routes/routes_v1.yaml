@@ -1,5 +1,5 @@
 controllers:
-  resource: '../Infrastructure/Http/V1/*'
+  resource: '../Http/V1/*'
   type: annotation
   prefix: /api/v1
 

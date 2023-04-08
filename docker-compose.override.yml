@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  ###> doctrine/doctrine-bundle ###
+#  mysql:
+#    ports:
+#      - "3306"
+
+###< doctrine/doctrine-bundle ###

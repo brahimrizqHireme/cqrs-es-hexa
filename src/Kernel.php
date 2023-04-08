@@ -33,10 +33,11 @@ class Kernel extends BaseKernel
 
         $this->prepareModuleRoutes($routes);
     }
+
     private function prepareModuleRoutes(RoutingConfigurator $routes)
     {
         $finder = new Finder();
-        $finder->files()->in($this->getProjectDir().'/src/*/Routes')->name('*.yaml');
+        $finder->files()->in($this->getProjectDir().'/src/*/Infrastructure/Routes')->name('*.yaml');
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
                 $routes->import($file->getRealPath());
