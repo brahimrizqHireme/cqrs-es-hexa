@@ -1,11 +1,11 @@
 <?php
 
-namespace CQRS\Common\Infrastructure\Model\Store;
-
+namespace CQRS\Common\Infrastructure\External\EventSauce;
 
 use CQRS\Common\Domain\Contract\Store\EventStoreInterface;
 use CQRS\Common\Domain\Enum\Database;
-use CQRS\Domain\Db\MongodbClient;
+use CQRS\Common\Infrastructure\External\Database\MongodbClient;
+use CQRS\Common\Infrastructure\External\Impl\UuidImplement;
 use EventSauce\EventSourcing\AggregateRootId;
 use EventSauce\EventSourcing\Header;
 use EventSauce\EventSourcing\Message;
@@ -20,14 +20,18 @@ use EventSauce\MessageRepository\TableSchema\TableSchema;
 use EventSauce\UuidEncoding\StringUuidEncoder;
 use EventSauce\UuidEncoding\UuidEncoder;
 use Generator;
+use LogicException;
 use MongoDB\Collection;
-use MongoDB\Driver\Exception\LogicException;
 use MongoDB\Driver\WriteConcern;
 use Throwable;
+use function count;
+use function get_class;
+use function json_decode;
+use function sprintf;
+
 
 class MongoDbEventStore implements EventStoreInterface
 {
-
     private const SORT_ASCENDING = 1;
     private MessageSerializer $serializer;
     private TableSchema $tableSchema;
@@ -36,7 +40,7 @@ class MongoDbEventStore implements EventStoreInterface
     private string $tableName = 'event_stream';
 
     public function __construct(
-        private ?MongodbClient $mongoClient
+        private MongodbClient $mongoClient
     )
     {
         $this->serializer = new ConstructingMessageSerializer();
@@ -63,7 +67,7 @@ class MongoDbEventStore implements EventStoreInterface
         $documents = [];
         foreach ($messages as $index => $message) {
             $payload = $this->serializer->serializeMessage($message);
-            $payload['headers'][Header::EVENT_ID] ??= \Symfony\Component\Uid\Uuid::v4()->__toString();
+            $payload['headers'][Header::EVENT_ID] ??= UuidImplement::v4()->__toString();
             $document = [
                     '_id' => $this->uuidEncoder->encodeString($payload['headers'][Header::EVENT_ID]),
                     'aggregate_root_id' => $this->uuidEncoder->encodeString($payload['headers'][Header::AGGREGATE_ROOT_ID]),
@@ -79,6 +83,7 @@ class MongoDbEventStore implements EventStoreInterface
         try {
             $this->getCollection()->insertMany($documents, ['writeConcern' => new WriteConcern('majority')]);
         } catch (Throwable $exception) {
+            dd($exception->getMessage());
             throw UnableToPersistMessages::dueTo('', $exception);
         }
     }

@@ -8,6 +8,13 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+    _instanceof:
+        CQRS\Common\Domain\Contract\Command\CommandHandlerInterface:
+            tags:
+                - { name: messenger.message_handler, bus: command.bus }
+        CQRS\Common\Domain\Contract\Query\QueryHandlerInterface:
+            tags:
+                - { name: messenger.message_handler, bus: query.bus }
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -17,4 +24,5 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
+#            - '../src/*/Infrastructure/External/EventSauce'
+            - '../src/Common/Infrastructure/External/Database/MongodbClient.php'

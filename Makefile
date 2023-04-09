@@ -30,7 +30,6 @@ help: ## Shows available commands with description
 
 build: ## Build dev environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	@echo ${APP_ENV}
 	@HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) WEB_PORT_HTTP=$(WEB_PORT_HTTP) WEB_PORT_SSL=$(WEB_PORT_SSL) XDEBUG_CONFIG=$(XDEBUG_CONFIG) INNODB_USE_NATIVE_AIO=$(INNODB_USE_NATIVE_AIO) docker-compose -f docker-compose.yml build
 else
 	$(ERROR_ONLY_FOR_HOST)
@@ -38,7 +37,6 @@ endif
 
 build-test: ## Build test or continuous integration environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	@echo ${APP_ENV}
 	@HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) WEB_PORT_HTTP=$(WEB_PORT_HTTP) WEB_PORT_SSL=$(WEB_PORT_SSL) XDEBUG_CONFIG=$(XDEBUG_CONFIG) INNODB_USE_NATIVE_AIO=$(INNODB_USE_NATIVE_AIO) docker-compose -f docker-compose-test-ci.yml build
 else
 	$(ERROR_ONLY_FOR_HOST)
@@ -134,7 +132,7 @@ endif
 
 ssh-root: ## Get bash as root user inside symfony docker container
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	@HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) WEB_PORT_HTTP=$(WEB_PORT_HTTP) WEB_PORT_SSL=$(WEB_PORT_SSL) XDEBUG_CONFIG=$(XDEBUG_CONFIG) INNODB_USE_NATIVE_AIO=$(INNODB_USE_NATIVE_AIO) docker-compose $(PROJECT_NAME) exec $(OPTION_T) symfony bash
+	echo @HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) WEB_PORT_HTTP=$(WEB_PORT_HTTP) WEB_PORT_SSL=$(WEB_PORT_SSL) XDEBUG_CONFIG=$(XDEBUG_CONFIG) INNODB_USE_NATIVE_AIO=$(INNODB_USE_NATIVE_AIO) docker-compose $(PROJECT_NAME) exec $(OPTION_T) symfony bash
 else
 	$(ERROR_ONLY_FOR_HOST)
 endif
@@ -245,11 +243,6 @@ else
 	$(ERROR_ONLY_FOR_HOST)
 endif
 
-create-db: ## Create database
-	@echo ${DATABASE_URL} 
-	@echo "Creating database ${APP_ENV}"
-	@make exec cmd="php bin/console doctrine:database:create"
-	
 drop-migrate: ## Drops databases and runs all migrations for the main/test databases
 	@make exec cmd="php bin/console doctrine:schema:drop --full-database --force"
 	@make exec cmd="php bin/console doctrine:schema:drop --full-database --force --env=test"

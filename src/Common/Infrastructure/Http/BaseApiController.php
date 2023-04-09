@@ -2,7 +2,6 @@
 
 namespace CQRS\Common\Infrastructure\Http;
 
-use CQRS\Common\Infrastructure\Model\Database\MongodbClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

@@ -22,14 +22,23 @@ services:
       - symfony
 
   mongodb:
-    #        image: 077428399685.dkr.ecr.us-east-1.amazonaws.com/local-hireme-mongodb:v4.2.0
     image: mongo:6.0
     container_name: ${COMPOSE_PROJECT_NAME}-mongodb
     hostname: mongodb
     volumes:
-      - mongodb_data:/data/db
+      - type: bind
+        source: ./.docker/dev/mongo.yml
+        target: /etc/mongod.conf
+      - type: volume
+        source: mongodb_data
+        target: /data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: cqrs
+    command: --config /etc/mongod.conf
     ports:
-      - "27018:27017"
+      - "27017:27017"
     networks:
       - symfony
 
@@ -50,7 +59,7 @@ services:
     depends_on:
       - mongodb
 #      - rabbitmq
-#      - rabbitmq
+#      - mysql
     networks:
       - symfony
 

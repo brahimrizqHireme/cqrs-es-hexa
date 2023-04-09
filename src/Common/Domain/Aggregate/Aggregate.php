@@ -7,5 +7,4 @@ use CQRS\Common\Domain\Trait\BaseAggregateTrait;
 
 abstract class Aggregate implements AggregateRootInterface
 {
-    use BaseAggregateTrait;
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace CQRS\Common\Infrastructure\Model;
+namespace CQRS\Common\Infrastructure\External\EventSauce;
 
 use EventSauce\EventSourcing\EventSourcedAggregateRootRepository;
 
