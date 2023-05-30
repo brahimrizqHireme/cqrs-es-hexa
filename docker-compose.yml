@@ -24,7 +24,7 @@ services:
   mongodb:
     image: mongo:6.0
     container_name: ${COMPOSE_PROJECT_NAME}-mongodb
-    hostname: mongodb
+    hostname: mongodb6
     volumes:
       - type: bind
         source: ./.docker/dev/mongo.yml
@@ -38,7 +38,7 @@ services:
       MONGO_INITDB_DATABASE: cqrs
     command: --config /etc/mongod.conf
     ports:
-      - "27017:27017"
+      - "27018:27017"
     networks:
       - symfony
 

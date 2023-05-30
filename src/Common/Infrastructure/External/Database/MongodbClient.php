@@ -7,10 +7,7 @@ use MongoDB\Client;
 
 class MongodbClient extends Client
 {
-    public static function create(
-        string $mongodbUrl,
-        string $mongodbDb,
-    ) : Client
+    public static function create(string $mongodbUrl) : Client
     {
         return new self(
             $mongodbUrl,
@@ -28,14 +25,5 @@ class MongodbClient extends Client
                 ],
             ]
         );
-
-//
-//       try {
-//           dd($client->listDatabases());
-//           $tt = $client->selectDatabase('cqrs')->selectCollection('test')->insertOne(['aaa' => 'vv']);
-//       } catch (\Exception $exception) {
-//           dd($exception->getMessage());
-//       }
-//        dd($tt, $mongodbUrl, 'ss');
     }
 }
