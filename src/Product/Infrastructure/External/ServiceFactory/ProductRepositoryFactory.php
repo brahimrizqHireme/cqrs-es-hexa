@@ -4,7 +4,7 @@ namespace CQRS\Product\Infrastructure\External\ServiceFactory;
 
 use CQRS\Common\Infrastructure\External\Database\MongodbClient;
 use CQRS\Common\Infrastructure\External\EventSauce\EventAggregateRootRepository;
-use CQRS\Common\Infrastructure\External\EventSauce\MongoDbEventStore;
+use CQRS\Common\Infrastructure\External\EventSauce\MongoDbMessageRepository;
 use CQRS\Product\Application\Decorator\EnrichProductMessageDecorator;
 use CQRS\Product\Application\Repository\ProductRepository;
 use CQRS\Product\Domain\Aggregate\Product;
@@ -15,7 +15,7 @@ use EventSauce\EventSourcing\SynchronousMessageDispatcher;
 
 readonly class ProductRepositoryFactory
 {
-    public function __construct(private MongodbClient $client){
+    public function __construct(private MongoDbMessageRepository $messageRepository){
     }
 
     public function create(): ProductRepository
@@ -28,7 +28,7 @@ readonly class ProductRepositoryFactory
         return new ProductRepository(
             new EventAggregateRootRepository(
                 Product::class,
-                new MongoDbEventStore($this->client),
+                $this->messageRepository,
                 new SynchronousMessageDispatcher(
                     new ProductProjector(),
                 ),

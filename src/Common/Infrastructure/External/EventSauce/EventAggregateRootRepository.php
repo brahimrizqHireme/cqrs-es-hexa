@@ -24,11 +24,6 @@ use Throwable;
 use function assert;
 use function count;
 
-/**
- * @template T of AggregateRoot
- *
- * @template-implements AggregateRootRepository<T>
- */
 class EventAggregateRootRepository implements RepositoryInterface
 {
     /** @var class-string<T> */

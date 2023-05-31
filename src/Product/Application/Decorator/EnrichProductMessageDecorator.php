@@ -9,6 +9,6 @@ class EnrichProductMessageDecorator implements EventDecoratorInterface
 {
     public function decorate(Message $message): Message
     {
-        return $message->withHeader('x-decorated-by', 'product decorator');
+        return $message->withHeader('x-decorated-by', 'xxxxxxxxxxxxxx decorator');
     }
 }

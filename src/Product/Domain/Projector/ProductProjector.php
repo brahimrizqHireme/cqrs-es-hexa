@@ -4,10 +4,11 @@ namespace CQRS\Product\Domain\Projector;
 
 use CQRS\Common\Domain\Projector\Projector;
 use CQRS\Product\Domain\Event\ProductWasCreated;
+use JetBrains\PhpStorm\NoReturn;
 
 class ProductProjector extends Projector
 {
-    public function onProductWasCreated(ProductWasCreated $event)
+    #[NoReturn] public function onProductWasCreated(ProductWasCreated $event): void
     {
         //todo do stuff
         //send email, notification, update something

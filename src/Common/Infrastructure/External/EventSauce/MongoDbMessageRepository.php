@@ -2,7 +2,7 @@
 
 namespace CQRS\Common\Infrastructure\External\EventSauce;
 
-use CQRS\Common\Domain\Contract\Store\EventStoreInterface;
+use CQRS\Common\Domain\Contract\Store\MessageRepositoryInterface;
 use CQRS\Common\Domain\Enum\Database;
 use CQRS\Common\Infrastructure\External\Database\MongodbClient;
 use CQRS\Common\Infrastructure\External\Impl\UuidImplement;
@@ -30,7 +30,7 @@ use function json_decode;
 use function sprintf;
 
 
-class MongoDbEventStore implements EventStoreInterface
+class MongoDbMessageRepository implements MessageRepositoryInterface
 {
     private const SORT_ASCENDING = 1;
     private MessageSerializer $serializer;
@@ -40,7 +40,7 @@ class MongoDbEventStore implements EventStoreInterface
     private string $tableName = 'event_stream';
 
     public function __construct(
-        private MongodbClient $mongoClient
+        private readonly MongodbClient $mongoClient
     )
     {
         $this->serializer = new ConstructingMessageSerializer();
@@ -49,10 +49,7 @@ class MongoDbEventStore implements EventStoreInterface
         $this->jsonEncodeOptions = 0;
     }
 
-    /**
-     * @return Collection
-     */
-    public function getCollection()
+    public function getCollection(): Collection
     {
         return $this->mongoClient->selectDatabase(Database::SELECTED_DATABASE->value)
             ->selectCollection($this->tableName);
@@ -104,9 +101,6 @@ class MongoDbEventStore implements EventStoreInterface
         }
     }
 
-    /**
-     * @psalm-return Generator<Message>
-     */
     public function retrieveAllAfterVersion(AggregateRootId $id, int $aggregateRootVersion): Generator
     {
         $options = [
@@ -122,9 +116,6 @@ class MongoDbEventStore implements EventStoreInterface
         }
     }
 
-    /**
-     * @psalm-return Generator<Message>
-     */
     private function yieldMessagesFromPayloads(iterable $payloads): Generator
     {
         foreach ($payloads as $payload) {
