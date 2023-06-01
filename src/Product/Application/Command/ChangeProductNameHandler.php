@@ -4,10 +4,9 @@ namespace CQRS\Product\Application\Command;
 
 
 use CQRS\Common\Domain\Contract\Command\CommandHandlerInterface;
-use CQRS\Product\Domain\Aggregate\Product;
 use CQRS\Product\Domain\Repository\ProductRepositoryInterface;
 
-final readonly class CreateProductHandler implements CommandHandlerInterface
+final readonly class ChangeProductNameHandler implements CommandHandlerInterface
 {
 
     public function __construct(
@@ -16,15 +15,11 @@ final readonly class CreateProductHandler implements CommandHandlerInterface
     {
     }
 
-    public function __invoke(CreateProduct $command): void
+    public function __invoke(ChangeProductName $command): void
     {
         //todo add check business
-        $product = Product::createProduct(
-            $command->id(),
-            $command->getName(),
-            $command->getDescription()
-        );
-
+        $product = $this->productRepository->get($command->id());
+        $product->changeProductName($command->name());
         $this->productRepository->save($product);
     }
 }

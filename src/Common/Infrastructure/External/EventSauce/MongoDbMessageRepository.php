@@ -3,12 +3,15 @@
 namespace CQRS\Common\Infrastructure\External\EventSauce;
 
 use CQRS\Common\Domain\Contract\Store\MessageRepositoryInterface;
+use CQRS\Common\Domain\Enum\Collections;
 use CQRS\Common\Domain\Enum\Database;
+use CQRS\Common\Domain\Trait\MongoDbTrait;
 use CQRS\Common\Infrastructure\External\Database\MongodbClient;
 use CQRS\Common\Infrastructure\External\Impl\UuidImplement;
 use EventSauce\EventSourcing\AggregateRootId;
 use EventSauce\EventSourcing\Header;
 use EventSauce\EventSourcing\Message;
+use EventSauce\EventSourcing\MessageRepository;
 use EventSauce\EventSourcing\OffsetCursor;
 use EventSauce\EventSourcing\PaginationCursor;
 use EventSauce\EventSourcing\Serialization\ConstructingMessageSerializer;
@@ -21,7 +24,6 @@ use EventSauce\UuidEncoding\StringUuidEncoder;
 use EventSauce\UuidEncoding\UuidEncoder;
 use Generator;
 use LogicException;
-use MongoDB\Collection;
 use MongoDB\Driver\WriteConcern;
 use Throwable;
 use function count;
@@ -29,30 +31,25 @@ use function get_class;
 use function json_decode;
 use function sprintf;
 
-
-class MongoDbMessageRepository implements MessageRepositoryInterface
+class MongoDbMessageRepository implements MessageRepository
 {
+    use MongoDbTrait;
+
     private const SORT_ASCENDING = 1;
     private MessageSerializer $serializer;
     private TableSchema $tableSchema;
     private UuidEncoder $uuidEncoder;
-    private int $jsonEncodeOptions;
     private string $tableName = 'event_stream';
 
     public function __construct(
-        private readonly MongodbClient $mongoClient
+        private readonly MongodbClient $mongoClient,
+        private readonly string $collection
     )
     {
         $this->serializer = new ConstructingMessageSerializer();
         $this->tableSchema = new DefaultTableSchema();
         $this->uuidEncoder = new StringUuidEncoder();
-        $this->jsonEncodeOptions = 0;
-    }
-
-    public function getCollection(): Collection
-    {
-        return $this->mongoClient->selectDatabase(Database::SELECTED_DATABASE->value)
-            ->selectCollection($this->tableName);
+        $this->mainCollection = $this->getCollection(sprintf('%s_%s', $this->collection, $this->tableName));
     }
 
     public function persist(Message ...$messages): void
@@ -78,13 +75,11 @@ class MongoDbMessageRepository implements MessageRepositoryInterface
         }
 
         try {
-            $this->getCollection()->insertMany($documents, ['writeConcern' => new WriteConcern('majority')]);
+            $this->insertMany($documents, ['writeConcern' => new WriteConcern('majority')]);
         } catch (Throwable $exception) {
-            dd($exception->getMessage());
             throw UnableToPersistMessages::dueTo('', $exception);
         }
     }
-
 
     public function retrieveAll(AggregateRootId $id): Generator
     {
@@ -92,7 +87,7 @@ class MongoDbMessageRepository implements MessageRepositoryInterface
             'sort' => ['version' => self::SORT_ASCENDING],
         ];
 
-        $cursor = $this->getCollection()->find(['aggregate_root_id' => $id->toString()], $options);
+        $cursor = $this->find(['aggregate_root_id' => $id->toString()], $options);
 
         try {
             return $this->yieldMessagesFromPayloads($cursor);
@@ -103,11 +98,9 @@ class MongoDbMessageRepository implements MessageRepositoryInterface
 
     public function retrieveAllAfterVersion(AggregateRootId $id, int $aggregateRootVersion): Generator
     {
-        $options = [
-            'sort' => ['version' => self::SORT_ASCENDING],
-        ];
+        $options = ['sort' => ['version' => self::SORT_ASCENDING]];
 
-        $cursor = $this->getCollection()->find(['aggregate_root_id' => $id->toString(), 'version' => $aggregateRootVersion], $options);
+        $cursor = $this->find(['aggregate_root_id' => $id->toString(), 'version' => $aggregateRootVersion],[], $options);
 
         try {
             return $this->yieldMessagesFromPayloads($cursor);
@@ -139,11 +132,10 @@ class MongoDbMessageRepository implements MessageRepositoryInterface
                 'version' => self::SORT_ASCENDING
             ],
             'skip' => $cursor->offset(),
-            'limit' => $cursor->limit(),
-            'projection' => ['payload']
+            'limit' => $cursor->limit()
         ];
 
-        $resultCursor = $this->getCollection()->find([], $options);
+        $resultCursor = $this->find([], ['payload' => 1], $options);
         $numberOfMessages = 0;
         try {
             foreach ($resultCursor as $payload) {

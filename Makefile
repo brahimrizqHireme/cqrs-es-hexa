@@ -1,9 +1,12 @@
+#!make
 include .env
+.SILENT:
 # Determine if .env.local file exist
 ifneq ("$(wildcard .env.local)", "")
 	include .env.local
 endif
 
+INNODB_USE_NATIVE_AIO=1
 ifndef INSIDE_DOCKER_CONTAINER
 	INSIDE_DOCKER_CONTAINER = 0
 endif

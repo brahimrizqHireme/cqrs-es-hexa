@@ -5,19 +5,17 @@ namespace CQRS\Product\Domain\Event;
 use CQRS\Common\Domain\Event\AggregateChanged;
 use CQRS\Product\Application\ValueObject\ProductId;
 
-class ProductWasCreated extends AggregateChanged
+class ProductNameWasChanged extends AggregateChanged
 {
     public function __construct(
-        private ProductId       $id,
-        private readonly string $name,
-        private readonly string $description
-    )
-    {
+        private readonly ProductId $productId,
+        private readonly string $name
+    ) {
     }
 
     public function productId(): ProductId
     {
-        return $this->id;
+        return $this->productId;
     }
 
     public function getName(): string
@@ -25,17 +23,11 @@ class ProductWasCreated extends AggregateChanged
         return $this->name;
     }
 
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
     public function toPayload(): array
     {
         return [
-            'id' => $this->id->toString(),
+            'id' => $this->productId->toString(),
             'name' => $this->name,
-            'description' => $this->description,
         ];
     }
 
@@ -44,7 +36,6 @@ class ProductWasCreated extends AggregateChanged
         return new self(
             ProductId::fromString($payload['id']),
             $payload['name'],
-            $payload['description'],
         );
     }
 }

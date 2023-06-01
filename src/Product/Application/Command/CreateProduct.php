@@ -5,13 +5,14 @@ namespace CQRS\Product\Application\Command;
 use CQRS\Common\Domain\Contract\Command\CommandInterface;
 use CQRS\Common\Domain\Contract\Process\SyncProcessInterface;
 use CQRS\Product\Application\ValueObject\ProductId;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
-final readonly class CreateProduct implements CommandInterface, SyncProcessInterface
+final  class CreateProduct implements CommandInterface, SyncProcessInterface
 {
     public function __construct(
-        private ProductId $id,
-        private string $name,
-        private string $description,
+        private readonly ProductId $id,
+        private readonly string    $name,
+        private readonly string    $description,
     )
     {
     }
@@ -21,12 +22,14 @@ final readonly class CreateProduct implements CommandInterface, SyncProcessInter
         return $this->id;
     }
 
-    public function name(): string
+    #[NotBlank]
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function description(): string
+    #[NotBlank]
+    public function getDescription(): string
     {
         return $this->description;
     }
