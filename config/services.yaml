@@ -25,4 +25,6 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 #            - '../src/*/Infrastructure/External/EventSauce'
+            - '../src/*/Application/Repository'
+#            - '../src/*/Application/Command'
             - '../src/Common/Infrastructure/External/Database/MongodbClient.php'

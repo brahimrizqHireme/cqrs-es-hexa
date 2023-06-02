@@ -3,11 +3,9 @@
 namespace CQRS\Common\Infrastructure\External\EventSauce;
 
 use CQRS\Common\Domain\Contract\Store\MessageRepositoryInterface;
-use CQRS\Common\Domain\Enum\Collections;
-use CQRS\Common\Domain\Enum\Database;
 use CQRS\Common\Domain\Trait\MongoDbTrait;
 use CQRS\Common\Infrastructure\External\Database\MongodbClient;
-use CQRS\Common\Infrastructure\External\Impl\UuidImplement;
+use CQRS\Common\Infrastructure\External\SymfonyUuidGenerator;
 use EventSauce\EventSourcing\AggregateRootId;
 use EventSauce\EventSourcing\Header;
 use EventSauce\EventSourcing\Message;
@@ -61,7 +59,7 @@ class MongoDbMessageRepository implements MessageRepository
         $documents = [];
         foreach ($messages as $index => $message) {
             $payload = $this->serializer->serializeMessage($message);
-            $payload['headers'][Header::EVENT_ID] ??= UuidImplement::v4()->__toString();
+            $payload['headers'][Header::EVENT_ID] ??= SymfonyUuidGenerator::v4()->__toString();
             $document = [
                     '_id' => $this->uuidEncoder->encodeString($payload['headers'][Header::EVENT_ID]),
                     'aggregate_root_id' => $this->uuidEncoder->encodeString($payload['headers'][Header::AGGREGATE_ROOT_ID]),
@@ -87,7 +85,7 @@ class MongoDbMessageRepository implements MessageRepository
             'sort' => ['version' => self::SORT_ASCENDING],
         ];
 
-        $cursor = $this->find(['aggregate_root_id' => $id->toString()], $options);
+        $cursor = $this->find(['aggregate_root_id' => $id->__toString()], $options)->results();
 
         try {
             return $this->yieldMessagesFromPayloads($cursor);
@@ -100,7 +98,7 @@ class MongoDbMessageRepository implements MessageRepository
     {
         $options = ['sort' => ['version' => self::SORT_ASCENDING]];
 
-        $cursor = $this->find(['aggregate_root_id' => $id->toString(), 'version' => $aggregateRootVersion],[], $options);
+        $cursor = $this->find(['aggregate_root_id' => $id->__toString(), 'version' => $aggregateRootVersion],[], $options)->results();
 
         try {
             return $this->yieldMessagesFromPayloads($cursor);
@@ -135,7 +133,7 @@ class MongoDbMessageRepository implements MessageRepository
             'limit' => $cursor->limit()
         ];
 
-        $resultCursor = $this->find([], ['payload' => 1], $options);
+        $resultCursor = $this->find([], ['payload' => 1], $options)->results();
         $numberOfMessages = 0;
         try {
             foreach ($resultCursor as $payload) {

@@ -2,7 +2,6 @@
 
 namespace CQRS\Common\Infrastructure\External\EventSauce;
 
-
 use EventSauce\EventSourcing\AggregateRootId;
 use EventSauce\EventSourcing\Snapshotting\Snapshot;
 use EventSauce\EventSourcing\Snapshotting\SnapshotRepository;

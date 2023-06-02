@@ -8,7 +8,7 @@ use CQRS\Common\Domain\Contract\Command\CommandBusInterface;
 use CQRS\Common\Domain\Contract\Command\CommandInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-final class MessengerCommandBus implements CommandBusInterface
+final readonly class MessengerCommandBus implements CommandBusInterface
 {
     public function __construct(private MessageBusInterface $commandBus)
     {

@@ -2,15 +2,16 @@
 
 namespace CQRS\Product\Infrastructure\External\ServiceFactory;
 
+use CQRS\Common\Application\Decorator\EnrichRequestHeadersMessageDecorator;
 use CQRS\Common\Infrastructure\External\Database\MongodbClient;
 use CQRS\Common\Infrastructure\External\EventSauce\AggregateRepository;
 use CQRS\Common\Infrastructure\External\EventSauce\ChainSnapshotRepository;
 use CQRS\Common\Infrastructure\External\EventSauce\MongoDbMessageRepository;
 use CQRS\Common\Infrastructure\External\EventSauce\MongodbSnapshotRepository;
-use CQRS\Product\Application\Decorator\EnrichRequestHeadersMessageDecorator;
 use CQRS\Product\Application\Repository\ProductRepository;
-use CQRS\Product\Domain\Aggregate\Product;
-use CQRS\Product\Domain\Projector\ProductProjector;
+use CQRS\Product\Domain\Contract\ProductPersistenceInterface;
+use CQRS\Product\Domain\Model\Aggregate\Product;
+use CQRS\Product\Domain\Model\ProcessManager\ProductProcessManager;
 use EventSauce\EventSourcing\DefaultHeadersDecorator;
 use EventSauce\EventSourcing\MessageDecoratorChain;
 use EventSauce\EventSourcing\Snapshotting\ConstructingAggregateRootRepositoryWithSnapshotting;
@@ -22,8 +23,9 @@ final class ProductRepositoryFactory
     const COLLECTION = 'product';
 
     public function __construct(
-        private readonly MongodbClient $mongoClient,
-        private readonly SerializerInterface $serializer
+        private readonly MongodbClient               $mongoClient,
+        private readonly SerializerInterface         $serializer,
+        private readonly ProductPersistenceInterface $mongodbStorageAdapter,
     ){
     }
 
@@ -52,7 +54,7 @@ final class ProductRepositoryFactory
                     Product::class,
                     $messageRepository,
                     new SynchronousMessageDispatcher(
-                        new ProductProjector($this->mongoClient),
+                        new ProductProcessManager($this->mongodbStorageAdapter),
                     ),
                     $decoratorChain
                 )

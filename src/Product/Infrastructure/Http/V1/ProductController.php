@@ -5,56 +5,39 @@ namespace CQRS\Product\Infrastructure\Http\V1;
 use CQRS\Common\Domain\Contract\Command\CommandBusInterface;
 use CQRS\Common\Infrastructure\Http\BaseApiController;
 use CQRS\Product\Application\Command\ChangeProductName;
-use CQRS\Product\Application\Command\CreateProduct;
-use CQRS\Product\Application\ValueObject\ProductId;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use CQRS\Product\Application\Command\CreateProductCommand;
+use CQRS\Product\Infrastructure\Request\CreateProductRequest;
+use CQRS\Product\Infrastructure\Request\EditProductRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/product')]
 class ProductController extends BaseApiController
 {
     public function __construct(
-        private readonly CommandBusInterface $commandBus,
-        private readonly ValidatorInterface $validator,
+        private readonly CommandBusInterface $commandBus
     )
     {
-//        parent::__construct();
     }
 
-    #[Route('/create', name: 'product_create')]
-    public function create(): Response
+    #[Route('/create', name: 'product_create', methods: ['POST'])]
+    public function create(CreateProductRequest $request): Response
     {
-        $command = new CreateProduct(
-            ProductId::generate(),
-            'test name',
-            ''
-        );
-
-        $errors = $this->validator->validate($command);
+        /** @var CreateProductCommand $command */
+        $command = $this->getCommand(CreateProductCommand::class, $request->toArray());
         $this->commandBus->dispatch($command);
-
-        return new JsonResponse([
-            'status' => 'Product was created',
-            'product_id' => $command->id()->toString(),
-        ], JsonResponse::HTTP_ACCEPTED);
+        return $this->acceptRequest();
     }
 
-    #[Route('/edit/{id}', name: 'product_edit')]
-    public function edit(string $id): Response
+    #[Route('/edit', name: 'product_edit', methods: ['PUT'])]
+    public function edit(EditProductRequest $request): Response
     {
-        $name = sprintf('Product was Edited %s', random_int(0,300));
-        $command = new ChangeProductName(
-            ProductId::fromString($id),
-            $name
-        );
-
+        /** @var ChangeProductName $command */
+        $command = $this->getCommand(ChangeProductName::class, $request->toArray());
         $this->commandBus->dispatch($command);
-
-        return new JsonResponse([
-            'status' => $name,
-            'product_id' => $command->id()->toString(),
-        ], JsonResponse::HTTP_ACCEPTED);
+        return $this->response([
+            'status' => sprintf('Product was edited : %s', $command->name()),
+            'product_id' => $command->id()->__toString(),
+        ]);
     }
 }

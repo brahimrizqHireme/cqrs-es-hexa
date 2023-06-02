@@ -1,0 +1,77 @@
+<?php
+
+namespace CQRS\Common\Infrastructure\Request;
+
+use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
+use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+
+abstract class AbstractRequestResolver implements ValueResolverInterface
+{
+    private array $requestData;
+    public function __construct(
+        protected readonly ValidatorInterface $validator
+    )
+    {
+    }
+
+    abstract public function toArray(): array;
+
+    public function resolve(Request $request, ArgumentMetadata $argument): \Generator
+    {
+        $class = $argument->getType();
+        if (get_class($this) === $class) {
+            $requestData = array_map('trim', $request->request->all());
+            $requestData = array_merge($requestData, $request->toArray(), $request->files->all());
+            $this->requestData = $requestData;
+            $this->populate();
+            if ($this->autoValidateRequest()) {
+                $this->validate();
+            }
+            yield $this;
+        }
+    }
+
+    public function validate(): void
+    {
+        $errors = $this->validator->validate($this);
+        $messages = ['message' => 'validation_failed', 'errors' => []];
+
+        /** @var ConstraintViolation $errors */
+        foreach ($errors as $message) {
+            $messages['errors'][] = [
+                'property' => $message->getPropertyPath(),
+                'value' => $message->getInvalidValue(),
+                'message' => $message->getMessage(),
+            ];
+        }
+
+        if (count($messages['errors']) > 0) {
+            $response = new JsonResponse($messages, Response::HTTP_UNPROCESSABLE_ENTITY);
+            $response->send();
+            exit;
+        }
+    }
+
+    protected function populate(): void
+    {
+        foreach ($this->requestData as $property => $value) {
+            if (!property_exists($this, $property)) {
+                throw new InvalidPropertyOrMethod(
+                    sprintf('Property %s was not found in request %s', $property, get_class($this))
+                );
+            }
+            $this->{$property} = $value;
+        }
+    }
+
+    protected function autoValidateRequest(): bool
+    {
+        return true;
+    }
+}

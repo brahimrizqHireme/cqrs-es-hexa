@@ -3,7 +3,10 @@
 namespace CQRS\Common\Infrastructure\Http;
 
 use CQRS\Common\Domain\Contract\Command\CommandInterface;
+use CQRS\Product\Application\Command\CreateProductCommand;
+use CQRS\Product\Application\ValueObject\ProductId;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ErrorHandler\Error\ClassNotFoundError;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,7 +29,30 @@ class BaseApiController extends AbstractController
         );
     }
 
-    private function acceptRequest(): Response
+    protected function getCommand(string $commandName, array $payload): CommandInterface
+    {
+        if (! class_exists($commandName)) {
+            throw new \UnexpectedValueException(sprintf('Given command class %s name is not a valid', $commandName));
+        }
+
+        if (!is_subclass_of($commandName, CommandInterface::class)) {
+            throw new \UnexpectedValueException(sprintf(
+                'Command class %s is not a instance of class of %s',
+                $commandName,
+                CommandInterface::class
+            ));
+        }
+
+        $messageRef = new \ReflectionClass($commandName);
+
+        /** @var $command CommandInterface */
+        $command = $messageRef->newInstanceWithoutConstructor();
+        $command->setPayload($payload);
+
+        return $command;
+    }
+
+    protected function acceptRequest(): Response
     {
         $response = new Response();
         $response->setStatusCode(202);
@@ -34,7 +60,7 @@ class BaseApiController extends AbstractController
         return $response;
     }
 
-    private function response(array $data, int $statusCode = JsonResponse::HTTP_OK): JsonResponse|Response
+    protected function response(array $data, int $statusCode = Response::HTTP_OK): JsonResponse|Response
     {
         return new JsonResponse($data, $statusCode);
     }

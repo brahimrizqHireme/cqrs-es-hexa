@@ -4,7 +4,5 @@ namespace CQRS\Common\Domain\Contract\Query;
 
 interface QueryBusInterface
 {
-
-    /** @return mixed */
-    public function handle(QueryInterface $query);
+    public function handle(QueryInterface $message): mixed;
 }

@@ -2,16 +2,31 @@
 
 namespace CQRS\Common\Domain\Trait;
 
+use CQRS\Common\Domain\Contract\Persistence\Result\CountByQueryResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\DeleteResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\DistinctResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\FindOneResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\FindResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\InsertManyResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\InsertResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\UpdateManyResultInterface;
+use CQRS\Common\Domain\Contract\Persistence\Result\UpdateResultInterface;
 use CQRS\Common\Domain\Enum\Database;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbCountByQueryResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbDistinctResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbFindAllFindResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbFindByQueryResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbFindOneResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbInsertManyResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbInsertResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbRemoveManyResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbRemoveResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbUpdateManyResult;
+use CQRS\Common\Infrastructure\External\Persistence\Mongodb\MongodbUpdateResult;
 use MongoDB\BSON\Timestamp;
 use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Client;
 use MongoDB\Collection;
-use MongoDB\DeleteResult;
-use MongoDB\InsertManyResult;
-use MongoDB\InsertOneResult;
-use MongoDB\UpdateResult;
 
 trait MongoDbTrait
 {
@@ -27,37 +42,37 @@ trait MongoDbTrait
         return $this->mongoClient->selectDatabase(Database::SELECTED_DATABASE->value)->selectCollection($collection);
     }
 
-    public function update(array $criteria, array $set, array $options = []): UpdateResult
+    public function update(array $criteria, array $set, array $options = []): UpdateResultInterface
     {
-        return $this->mainCollection->updateOne($criteria, $set, $options);
+        return new MongodbUpdateResult($this->mainCollection->updateOne($criteria, $set, $options));
     }
 
-    public function updateMany(array $criteria, array $set, array $options = []): UpdateResult
+    public function updateMany(array $criteria, array $set, array $options = []): UpdateManyResultInterface
     {
-        return $this->mainCollection->updateMany($criteria, $set, $options);
+        return new MongodbUpdateManyResult($this->mainCollection->updateMany($criteria, $set, $options));
     }
 
-    public function count(array $query = [], array $options = []): int
+    public function count(array $query = [], array $options = []): CountByQueryResultInterface
     {
-        return $this->mainCollection->countDocuments($query, $options);
+        new MongodbCountByQueryResult($this->mainCollection->countDocuments($query, $options));
     }
 
-    public function insert(array $data, array $options = []): InsertOneResult
+    public function insert(array $data, array $options = []): InsertResultInterface
     {
-        return $this->mainCollection->insertOne($data, $options);
+        return new MongodbInsertResult($this->mainCollection->insertOne($data, $options));
     }
 
-    public function insertMany(array $data, array $options = []): InsertManyResult
+    public function insertMany(array $data, array $options = []): InsertManyResultInterface
     {
-        return $this->mainCollection->insertMany($data, $options);
+        return new MongodbInsertManyResult($this->mainCollection->insertMany($data, $options));
     }
 
-    public function findAll(): array
+    public function findAll(): FindResultInterface
     {
-        return $this->mainCollection->find()->toArray();
+        return new MongodbFindAllFindResult($this->mainCollection->find());
     }
 
-    public function find(array $query = [], array $fields = [], array $context = []): array
+    public function find(array $query = [], array $fields = [], array $context = []): FindResultInterface
     {
         $options = [];
         if (!empty($fields)) {
@@ -74,15 +89,15 @@ trait MongoDbTrait
             $options['limit'] = (int)$context[self::$LIMIT];
         }
 
-        return $this->mainCollection->find($query, $options)->toArray();
+        return new MongodbFindByQueryResult($this->mainCollection->find($query, $options));
     }
 
-    public function findById(string $id): object|array|null
+    public function findById(string $id): FindOneResultInterface
     {
-        return $this->findOne(['_id' => $id]);
+        return new MongodbFindOneResult((array)$this->findOne(['_id' => $id]));
     }
 
-    public function findOne(array $query = [], array $fields = [], array $options = []): object|array|null
+    public function findOne(array $query = [], array $fields = [], array $options = []): FindOneResultInterface
     {
         $queryOptions = [];
         if (!empty($fields)) {
@@ -96,7 +111,7 @@ trait MongoDbTrait
             $queryOptions['skip'] = (int)$options[self::$SKIP];
         }
 
-        return $this->mainCollection->findOne($query, $queryOptions);
+        return new MongodbFindOneResult($this->mainCollection->findOne($query, $queryOptions));
     }
 
     public function findAndModify(
@@ -104,7 +119,7 @@ trait MongoDbTrait
         array $update = null,
         array $fields = null,
         array $options = []
-    ): object|array|null {
+    ): FindOneResultInterface {
 
         $queryOptions = [];
         if (!empty($fields)) {
@@ -118,14 +133,10 @@ trait MongoDbTrait
             $queryOptions['skip'] = (int)$options[self::$SKIP];
         }
 
-        return $this->mainCollection->findOneAndUpdate($query, $update, $queryOptions);
+        return new MongodbFindOneResult($this->mainCollection->findOneAndUpdate($query, $update, $queryOptions));
     }
 
-    /**
-     * @param $value
-     * @return mixed
-     */
-    public static function toLegacy($value): mixed
+    public static function toLegacy(mixed $value): mixed
     {
         switch (true) {
             case $value instanceof Type:
@@ -149,22 +160,13 @@ trait MongoDbTrait
         }
     }
 
-    /**
-     * @param $value
-     * @return int|mixed
-     */
-    private static function convertBSONObjectToLegacy($value): mixed
+    private static function convertBSONObjectToLegacy(mixed $value): mixed
     {
-        switch (true) {
-            case $value instanceof \MongoTimestamp:
-            case $value instanceof Timestamp:
-                return $value->sec;
-            case $value instanceof \MongoDate:
-            case $value instanceof UTCDateTime:
-                return $value->toDateTime()->getTimestamp();
-            default:
-                return $value;
-        }
+        return match (true) {
+            $value instanceof \MongoTimestamp, $value instanceof Timestamp => $value->sec,
+            $value instanceof \MongoDate, $value instanceof UTCDateTime => $value->toDateTime()->getTimestamp(),
+            default => $value,
+        };
     }
 
     public function aggregate(array $pipeline, array $op = []): array
@@ -174,23 +176,23 @@ trait MongoDbTrait
         return $this->mainCollection->aggregate($pipeline, $op)->toArray();
     }
 
-    public function remove(array $criteria = [], array $options = []): DeleteResult
+    public function remove(array $criteria = [], array $options = []): DeleteResultInterface
     {
-        return $this->mainCollection->deleteOne($criteria, $options);
+        return new MongodbRemoveResult($this->mainCollection->deleteOne($criteria, $options));
     }
 
-    public function removeMany(array $criteria = [], array $options = []): DeleteResult
+    public function removeMany(array $criteria = [], array $options = []): DeleteResultInterface
     {
-        return $this->mainCollection->deleteMany($criteria, $options);
+        return new MongodbRemoveManyResult($this->mainCollection->deleteMany($criteria, $options));
     }
 
-    public function distinct(string $fieldName, array $criteria = [], array $options = []): array
+    public function distinct(string $fieldName, array $criteria = [], array $options = []): DistinctResultInterface
     {
         $result = $this->mainCollection->distinct($fieldName, $criteria, $options);
         if (isset($options[self::$LIMIT]) && is_int($options[self::$LIMIT]) && 0 != $options[self::$LIMIT]) {
             $result = array_slice($result, 0, $options[self::$LIMIT]);
         }
 
-        return $result;
+        return new MongodbDistinctResult($result);
     }
 }
