@@ -2,8 +2,6 @@
 #  - { resource: parameters.yml }
 services:
 
-    CQRS\Product\Domain\Repository\ProductRepositoryInterface:
+    CQRS\Product\Domain\Contract\Repository\ProductRepositoryInterface:
       # the first argument is the class and the second argument is the static method
       factory: [ '@CQRS\Product\Infrastructure\External\ServiceFactory\ProductRepositoryFactory', 'create' ]
-      arguments:
-        - '@CQRS\Common\Infrastructure\External\Database\MongodbClient'

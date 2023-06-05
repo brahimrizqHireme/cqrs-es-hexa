@@ -2,13 +2,22 @@
 
 namespace CQRS\Common\Infrastructure\Http;
 
+use CQRS\Common\Domain\Contract\Command\CommandInterface;
+use CQRS\Product\Application\Command\CreateProductCommand;
+use CQRS\Product\Application\ValueObject\ProductId;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ErrorHandler\Error\ClassNotFoundError;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BaseApiController extends AbstractController
 {
+//    public function __construct(private readonly ValidatorInterface $validator)
+//    {
+//    }
+
     public function version(Request $request): Response
     {
         return new JsonResponse(
@@ -18,5 +27,46 @@ class BaseApiController extends AbstractController
             ],
             JsonResponse::HTTP_ACCEPTED
         );
+    }
+
+    protected function getCommand(string $commandName, array $payload): CommandInterface
+    {
+        if (! class_exists($commandName)) {
+            throw new \UnexpectedValueException(sprintf('Given command class %s name is not a valid', $commandName));
+        }
+
+        if (!is_subclass_of($commandName, CommandInterface::class)) {
+            throw new \UnexpectedValueException(sprintf(
+                'Command class %s is not a instance of class of %s',
+                $commandName,
+                CommandInterface::class
+            ));
+        }
+
+        $messageRef = new \ReflectionClass($commandName);
+
+        /** @var $command CommandInterface */
+        $command = $messageRef->newInstanceWithoutConstructor();
+        $command->setPayload($payload);
+
+        return $command;
+    }
+
+    protected function acceptRequest(): Response
+    {
+        $response = new Response();
+        $response->setStatusCode(202);
+
+        return $response;
+    }
+
+    protected function response(array $data, int $statusCode = Response::HTTP_OK): JsonResponse|Response
+    {
+        return new JsonResponse($data, $statusCode);
+    }
+
+    public function validate(CommandInterface $command): void
+    {
+
     }
 }

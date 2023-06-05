@@ -9,7 +9,19 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-             async: '%env(MESSENGER_TRANSPORT_DSN)%'
+             async:
+                  dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                  retry_strategy:
+                       max_retries: 3
+                       # milliseconds delay
+                       delay: 1000
+                       # causes the delay to be higher before each retry
+                       # e.g. 1 second delay, 2 seconds, 4 seconds
+                       multiplier: 2
+                       max_delay: 0
+                       # override all of this with a service that
+                       # implements Symfony\Component\Messenger\Retry\RetryStrategyInterface
+                       # service: null
              failed: '%env(MESSENGER_TRANSPORT_DSN_FAILED)%'
              sync: 'sync://'
 

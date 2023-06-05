@@ -2,7 +2,4 @@
 
 namespace CQRS\Common\Domain\Contract\Query;
 
-interface QueryInterface
-{
-
-}
+interface QueryInterface {}

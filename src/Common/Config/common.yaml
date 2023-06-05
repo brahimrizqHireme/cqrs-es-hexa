@@ -5,4 +5,3 @@ services:
     factory: [null, 'create']
     arguments:
       $mongodbUrl: '%MONGODB_URL%'
-      $mongodbDb: '%MONGODB_DB%'

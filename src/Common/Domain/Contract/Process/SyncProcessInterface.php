@@ -2,7 +2,4 @@
 
 namespace CQRS\Common\Domain\Contract\Process;
 
-interface SyncProcessInterface
-{
-
-}
+interface SyncProcessInterface {}

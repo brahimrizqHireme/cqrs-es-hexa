@@ -2,26 +2,34 @@
 
 namespace CQRS\Product\Application\Repository;
 
-use CQRS\Common\Domain\Contract\Repository\RepositoryInterface;
 use CQRS\Product\Application\ValueObject\ProductId;
-use CQRS\Product\Domain\Aggregate\Product;
-use CQRS\Product\Domain\Repository\ProductRepositoryInterface;
+use CQRS\Product\Domain\Contract\Repository\ProductRepositoryInterface;
+use CQRS\Product\Domain\Exception\ProductExceptions;
+use CQRS\Product\Domain\Model\Aggregate\Product;
+use EventSauce\EventSourcing\Snapshotting\AggregateRootRepositoryWithSnapshotting;
 use function assert;
 
 readonly class ProductRepository implements ProductRepositoryInterface
 {
-    public function __construct(private RepositoryInterface $repository){}
+    public function __construct(private AggregateRootRepositoryWithSnapshotting $repository) {}
 
     public function save(Product $product): void
     {
         $this->repository->persist($product);
+        $this->repository->storeSnapshot($product);
     }
 
     public function get(ProductId $productId): Product
     {
-        $tab = $this->repository->retrieve($productId);
-        assert($tab instanceof Product);
+        try {
+            /** @var Product $product */
+            $product = $this->repository->retrieveFromSnapshot($productId);
+        } catch (\Throwable $exception) {
+            throw ProductExceptions::notFound();
+        }
 
-        return $tab;
+        assert($product instanceof Product);
+        return $product;
     }
+
 }

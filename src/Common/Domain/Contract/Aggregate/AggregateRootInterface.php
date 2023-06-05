@@ -2,9 +2,9 @@
 
 namespace CQRS\Common\Domain\Contract\Aggregate;
 
-use EventSauce\EventSourcing\AggregateRoot;
+use EventSauce\EventSourcing\Snapshotting\AggregateRootWithSnapshotting;
 
-interface AggregateRootInterface extends AggregateRoot
+interface AggregateRootInterface extends AggregateRootWithSnapshotting
 {
 
 }
