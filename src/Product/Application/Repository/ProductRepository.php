@@ -19,14 +19,13 @@ readonly class ProductRepository implements ProductRepositoryInterface
         $this->repository->storeSnapshot($product);
     }
 
-    /** @throws ProductExceptions **/
     public function get(ProductId $productId): Product
     {
         try {
             /** @var Product $product */
             $product = $this->repository->retrieveFromSnapshot($productId);
         } catch (\Throwable $exception) {
-            throw ProductExceptions::notFound($exception->getMessage());
+            throw ProductExceptions::notFound();
         }
 
         assert($product instanceof Product);

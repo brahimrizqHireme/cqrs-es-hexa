@@ -1,8 +1,8 @@
 <?php
 
-namespace CQRS\Common\Infrastructure\Request;
+namespace CQRS\Common\Infrastructure\Presentation\Request;
 
-use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
+use CQRS\Common\Domain\Exception\DomainException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,15 +40,11 @@ abstract class AbstractRequestResolver implements ValueResolverInterface
     public function validate(): void
     {
         $errors = $this->validator->validate($this);
-        $messages = ['message' => 'validation_failed', 'errors' => []];
+        $messages = ['message' => 'validation_failed', 'code' => Response::HTTP_UNPROCESSABLE_ENTITY, 'errors' => []];
 
-        /** @var ConstraintViolation $errors */
+        /** @var ConstraintViolation[] $errors */
         foreach ($errors as $message) {
-            $messages['errors'][] = [
-                'property' => $message->getPropertyPath(),
-                'value' => $message->getInvalidValue(),
-                'message' => $message->getMessage(),
-            ];
+            $messages['errors'][$message->getPropertyPath()][] = $message->getMessage();
         }
 
         if (count($messages['errors']) > 0) {
@@ -62,9 +58,7 @@ abstract class AbstractRequestResolver implements ValueResolverInterface
     {
         foreach ($this->requestData as $property => $value) {
             if (!property_exists($this, $property)) {
-                throw new InvalidPropertyOrMethod(
-                    sprintf('Property %s was not found in request %s', $property, get_class($this))
-                );
+                throw DomainException::propertyNotFound(get_class($this), $property);
             }
             $this->{$property} = $value;
         }

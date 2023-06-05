@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace CQRS\Common\Domain\Helper;
 
 use CQRS\Common\Domain\Contract\Aggregate\UuidGenerator;
-use CQRS\Common\Domain\Exception\InvalidArgumentException;
+use CQRS\Common\Domain\Exception\DomainException;
 use CQRS\Common\Infrastructure\External\SymfonyUuidGenerator;
 use EventSauce\EventSourcing\AggregateRootId;
 
@@ -50,7 +50,7 @@ abstract class AbstractUuidGenerator implements UuidGenerator, \Stringable, Aggr
     private function ensureIsValidUuid(string $id): void
     {
         if (!static::isValid($id)) {
-            throw new InvalidArgumentException(sprintf('<%s> does not allow the value <%s>.', static::class, $id));
+            throw new DomainException(sprintf('<%s> does not allow the value <%s>.', static::class, $id));
         }
     }
 }

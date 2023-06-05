@@ -1,9 +1,8 @@
 <?php
 
-namespace CQRS\Product\Infrastructure\Request;
+namespace CQRS\Product\Infrastructure\Presentation\Request;
 
-use CQRS\Common\Infrastructure\Request\AbstractRequestResolver;
-use Symfony\Component\DependencyInjection\Attribute\When;
+use CQRS\Common\Infrastructure\Presentation\Request\AbstractRequestResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
 //#[When(env: 'dev')]

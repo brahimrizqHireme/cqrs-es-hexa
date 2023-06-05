@@ -1,8 +1,8 @@
 <?php
 
-namespace CQRS\Product\Infrastructure\Request;
+namespace CQRS\Product\Infrastructure\Presentation\Request;
 
-use CQRS\Common\Infrastructure\Request\AbstractRequestResolver;
+use CQRS\Common\Infrastructure\Presentation\Request\AbstractRequestResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class EditProductRequest extends AbstractRequestResolver
@@ -12,6 +12,8 @@ class EditProductRequest extends AbstractRequestResolver
     protected string $id;
 
     #[Assert\NotBlank()]
+//    #[Assert\Type('integer')]
+//    #[Assert\Length(min: 5, max: 30)]
     protected string $name;
 
     public function toArray(): array

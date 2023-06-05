@@ -11,6 +11,6 @@ readonly class MongodbFindOneResult implements FindOneResultInterface
     }
 
     public function results(): array {
-        return $this->result;
+        return $this->result ?? [];
     }
 }

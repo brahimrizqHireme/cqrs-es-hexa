@@ -2,7 +2,7 @@
 
 namespace CQRS\Common\Domain\Trait;
 
-use CQRS\Common\Domain\Exception\InvalidArgumentException;
+use CQRS\Common\Domain\Exception\DomainException;
 use EventSauce\EventSourcing\AggregateRootBehaviourWithRequiredHistory;
 use EventSauce\EventSourcing\AggregateRootId;
 use EventSauce\EventSourcing\Snapshotting\AggregateRootWithSnapshotting;
@@ -11,6 +11,7 @@ use Exception;
 
 trait BaseAggregateTrait
 {
+
     use SnapshottingBehaviour;
     use AggregateRootBehaviourWithRequiredHistory;
 
@@ -36,7 +37,7 @@ trait BaseAggregateTrait
         $parts = explode('\\', get_class($event));
         $methodName = 'when' . end($parts);
         if (!method_exists($this, $methodName)) {
-            throw new InvalidArgumentException(sprintf('Method %s was not found in class %s', $methodName, get_class($this)));
+            throw DomainException::withApplyFunction(get_class($this), $methodName);
         }
 
         $this->{$methodName}($event);

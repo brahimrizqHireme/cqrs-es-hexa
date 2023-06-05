@@ -6,8 +6,8 @@ use CQRS\Common\Domain\Contract\Command\CommandBusInterface;
 use CQRS\Common\Infrastructure\Http\BaseApiController;
 use CQRS\Product\Application\Command\ChangeProductName;
 use CQRS\Product\Application\Command\CreateProductCommand;
-use CQRS\Product\Infrastructure\Request\CreateProductRequest;
-use CQRS\Product\Infrastructure\Request\EditProductRequest;
+use CQRS\Product\Infrastructure\Presentation\Request\CreateProductRequest;
+use CQRS\Product\Infrastructure\Presentation\Request\EditProductRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 

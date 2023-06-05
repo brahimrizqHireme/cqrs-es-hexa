@@ -2,16 +2,15 @@
 
 namespace CQRS\Product\Domain\Exception;
 
-use CQRS\Common\Domain\Exception\InvalidArgumentException;
+use CQRS\Common\Domain\Contract\ApiExceptionInterface;
+use CQRS\Common\Domain\Exception\DomainException;
+use CQRS\Common\Domain\Exception\NotFound;
 
-class ProductExceptions extends InvalidArgumentException
+#[NotFound]
+class ProductExceptions extends DomainException implements ApiExceptionInterface
 {
-    public static function notFound(?string $message = null): ProductExceptions
+    public static function notFound(): ApiExceptionInterface
     {
-        if (!empty($message)) {
-            return new self($message);
-        }
-
         return new self('Product was not found.');
     }
 }
