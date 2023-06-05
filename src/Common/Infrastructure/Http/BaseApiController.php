@@ -3,21 +3,13 @@
 namespace CQRS\Common\Infrastructure\Http;
 
 use CQRS\Common\Domain\Contract\Command\CommandInterface;
-use CQRS\Product\Application\Command\CreateProductCommand;
-use CQRS\Product\Application\ValueObject\ProductId;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\ErrorHandler\Error\ClassNotFoundError;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BaseApiController extends AbstractController
 {
-//    public function __construct(private readonly ValidatorInterface $validator)
-//    {
-//    }
-
     public function version(Request $request): Response
     {
         return new JsonResponse(
@@ -25,7 +17,7 @@ class BaseApiController extends AbstractController
                 'version' => $this->getParameter('API_VERSION'),
                 'status' => 'ok',
             ],
-            JsonResponse::HTTP_ACCEPTED
+            Response::HTTP_ACCEPTED
         );
     }
 

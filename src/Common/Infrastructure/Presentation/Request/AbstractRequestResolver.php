@@ -22,6 +22,9 @@ abstract class AbstractRequestResolver implements ValueResolverInterface
 
     abstract public function toArray(): array;
 
+    /**
+     * @throws DomainException
+     */
     public function resolve(Request $request, ArgumentMetadata $argument): \Generator
     {
         $class = $argument->getType();
@@ -54,6 +57,9 @@ abstract class AbstractRequestResolver implements ValueResolverInterface
         }
     }
 
+    /**
+     * @throws DomainException
+     */
     protected function populate(): void
     {
         foreach ($this->requestData as $property => $value) {
