@@ -2,7 +2,6 @@
 
 namespace CQRS\Common\Infrastructure\External\EventSauce;
 
-use CQRS\Common\Domain\Contract\Store\MessageRepositoryInterface;
 use CQRS\Common\Domain\Trait\MongoDbTrait;
 use CQRS\Common\Infrastructure\External\Database\MongodbClient;
 use CQRS\Common\Infrastructure\External\SymfonyUuidGenerator;
@@ -37,7 +36,7 @@ class MongoDbMessageRepository implements MessageRepository
     private MessageSerializer $serializer;
     private TableSchema $tableSchema;
     private UuidEncoder $uuidEncoder;
-    private string $tableName = 'event_stream';
+    private string $tableSuffix = 'event_stream';
 
     public function __construct(
         private readonly MongodbClient $mongoClient,
@@ -47,7 +46,7 @@ class MongoDbMessageRepository implements MessageRepository
         $this->serializer = new ConstructingMessageSerializer();
         $this->tableSchema = new DefaultTableSchema();
         $this->uuidEncoder = new StringUuidEncoder();
-        $this->mainCollection = $this->getCollection(sprintf('%s_%s', $this->collection, $this->tableName));
+        $this->mainCollection = $this->getCollection(sprintf('%s_%s', $this->collection, $this->tableSuffix));
     }
 
     public function persist(Message ...$messages): void

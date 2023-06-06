@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class MongodbSnapshotRepository implements SnapshotRepository
 {
     use MongoDbTrait;
-    private string $tableName = 'snapshot';
+    private string $tableSuffix = 'snapshot';
 
     private const SORT_ASCENDING = -1;
     public function __construct(
@@ -26,7 +26,7 @@ class MongodbSnapshotRepository implements SnapshotRepository
         private readonly SerializerInterface $serializer,
         private readonly string $collection
     ) {
-        $this->mainCollection = $this->getCollection(sprintf('%s_%s', $collection, $this->tableName));
+        $this->mainCollection = $this->getCollection(sprintf('%s_%s', $collection, $this->tableSuffix));
     }
 
     /**
