@@ -4,7 +4,7 @@ namespace CQRS\Common\Domain\Trait;
 
 trait CommandPayloadTrait
 {
-    private array $payload;
+    protected array $payload;
 
     public function setPayload(array $payload): void
     {

@@ -20,10 +20,11 @@ abstract class AbstractRequestResolver implements ValueResolverInterface
     {
     }
 
-    abstract public function toArray(): array;
+    abstract protected function toArray(): array;
 
     /**
      * @throws DomainException
+     * @throws \ReflectionException
      */
     public function resolve(Request $request, ArgumentMetadata $argument): \Generator
     {
@@ -37,13 +38,32 @@ abstract class AbstractRequestResolver implements ValueResolverInterface
                 $this->validate();
             }
             yield $this;
+
+
+//            $reflection = new ReflectionClass($class);
+//            $attributes = $reflection->getAttributes();
+//
+//            $commandInstance = null;
+//            foreach ($attributes as $attribute) {
+//                $instance = $attribute->newInstance();
+//                if ($instance instanceof CommandAttributeResolver) {
+//                    $commandInstance = call_user_func_array([$instance->getCommand(), 'withData'], $requestData);
+//                    break;
+//                }
+//            }
+//
+//            if (empty($attributes) || !$commandInstance instanceof CommandInterface) {
+//                throw DomainException::withCommandArgumentResolver();
+//            }
+//
+//            yield $commandInstance;
         }
     }
 
     public function validate(): void
     {
         $errors = $this->validator->validate($this);
-        $messages = ['message' => 'validation_failed', 'code' => Response::HTTP_UNPROCESSABLE_ENTITY, 'errors' => []];
+        $messages = ['message' => 'validation_failed', 'code' => Response::HTTP_BAD_REQUEST, 'errors' => []];
 
         /** @var ConstraintViolation[] $errors */
         foreach ($errors as $message) {
@@ -51,7 +71,7 @@ abstract class AbstractRequestResolver implements ValueResolverInterface
         }
 
         if (count($messages['errors']) > 0) {
-            $response = new JsonResponse($messages, Response::HTTP_UNPROCESSABLE_ENTITY);
+            $response = new JsonResponse($messages, Response::HTTP_BAD_REQUEST);
             $response->send();
             exit;
         }

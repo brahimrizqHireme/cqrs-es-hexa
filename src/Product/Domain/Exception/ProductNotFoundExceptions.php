@@ -3,11 +3,11 @@
 namespace CQRS\Product\Domain\Exception;
 
 use CQRS\Common\Domain\Contract\ApiExceptionInterface;
-use CQRS\Common\Domain\Exception\DomainException;
+use CQRS\Common\Domain\Exception\ApiException;
 use CQRS\Common\Domain\Exception\NotFound;
 
 #[NotFound]
-class ProductExceptions extends DomainException implements ApiExceptionInterface
+class ProductNotFoundExceptions extends ApiException
 {
     public static function notFound(): ApiExceptionInterface
     {

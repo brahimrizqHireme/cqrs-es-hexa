@@ -2,29 +2,23 @@
 
 namespace CQRS\Product\Application\Command;
 
-use CQRS\Common\Domain\Contract\Command\CommandInterface;
+use CQRS\Common\Domain\Command\Command;
 use CQRS\Common\Domain\Contract\Process\SyncProcessInterface;
-use CQRS\Common\Domain\Trait\CommandPayloadTrait;
 use CQRS\Product\Application\ValueObject\ProductId;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
-final class CreateProductCommand implements CommandInterface, SyncProcessInterface
+final class CreateProductCommand extends Command implements SyncProcessInterface
 {
-    use CommandPayloadTrait;
-
-    public function withData(
-        string $id,
-        string $name,
-        string $description,
+    public static function withData(
+        ... $params
     ): CreateProductCommand {
         return new self([
-            'id' => $id,
-            'name' => $name,
-            'description' => $description
+            'id' => $params['id'],
+            'name' => $params['name'],
+            'description' => $params['description']
         ]);
     }
 
-    public function id(): ProductId
+    public function getId(): ProductId
     {
         return ProductId::fromString($this->payload['id']);
     }

@@ -34,13 +34,8 @@ class BaseApiController extends AbstractController
                 CommandInterface::class
             ));
         }
-
-        $messageRef = new \ReflectionClass($commandName);
-
         /** @var $command CommandInterface */
-        $command = $messageRef->newInstanceWithoutConstructor();
-        $command->setPayload($payload);
-
+        $command = call_user_func_array([$commandName, 'withData'], $payload);
         return $command;
     }
 

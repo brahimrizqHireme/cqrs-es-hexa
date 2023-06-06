@@ -5,6 +5,7 @@ namespace CQRS\Common\Domain\Helper;
 class CommonService
 {
     const CLI = 'cli';
+    const PROD = 'prod';
     public static function getClientIpAdd()
     {
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -15,6 +16,11 @@ class CommonService
             $ip = $_SERVER['REMOTE_ADDR'] ?? '';
         }
         return $ip;
+    }
+
+    public static function isProdEnv(): bool
+    {
+        return self::PROD === $_ENV['APP_ENV'];
     }
 
     public static function getClientDataFromServer(): array
