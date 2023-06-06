@@ -10,7 +10,7 @@ use EventSauce\EventSourcing\AggregateRootId;
 
 abstract class AbstractUuidGenerator implements UuidGenerator, \Stringable, AggregateRootId
 {
-    private string $id;
+    private ?string $id = null;
 
     private function __construct(string $id)
     {

@@ -6,7 +6,6 @@ framework:
         buses:
             command.bus: ~
             query.bus: ~
-
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
              async:

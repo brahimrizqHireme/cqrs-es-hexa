@@ -2,22 +2,21 @@
 
 namespace CQRS\Product\Application\Command;
 
-use CQRS\Common\Domain\Contract\Command\CommandInterface;
+use CQRS\Common\Domain\Command\Command;
 use CQRS\Common\Domain\Contract\Process\SyncProcessInterface;
 use CQRS\Common\Domain\Trait\CommandPayloadTrait;
 use CQRS\Product\Application\ValueObject\ProductId;
 
-final class ChangeProductName implements CommandInterface, SyncProcessInterface
+final class ChangeProductName extends Command implements SyncProcessInterface
 {
     use CommandPayloadTrait;
 
-    public function withData(
-        string $id,
-        string $name
+    public static function withData(
+        ... $params
     ): ChangeProductName {
         return new ChangeProductName([
-            'id' => $id,
-            'name' => $name
+            'id' => $params['id'],
+            'name' => $params['name']
         ]);
     }
 

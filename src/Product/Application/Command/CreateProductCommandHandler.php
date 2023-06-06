@@ -20,7 +20,7 @@ final  readonly class CreateProductCommandHandler implements CommandHandlerInter
     {
         //todo add check business
         $product = Product::createProduct(
-            $command->id(),
+            $command->getId(),
             $command->getName(),
             $command->getDescription()
         );
