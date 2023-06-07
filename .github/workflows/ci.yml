@@ -43,9 +43,9 @@ jobs:
 
 #      - name: Install MongoDB PHP library
 #        run: composer require mongodb/mongodb
-#
-#      - name: Install dependencies
-#        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run tests
         env:
