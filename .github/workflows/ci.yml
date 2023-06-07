@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test Job
@@ -33,17 +36,26 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
 
-#      - name: Start MongoDB container
-#        run: docker-compose -f docker-compose-test.yml up -d
+      - name: Copy .env.test.local
+        run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
 
-#      - name: Wait for MongoDB
-#        run: docker exec -ti mongodb bash -c 'until mongosh --eval "db.serverStatus()" | grep "MongoDB Server"; do sleep 1; done'
-
-#      - name: Install MongoDB PHP library
-#        run: composer require mongodb/mongodb
+      - name: Cache Composer packages
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction --prefer-dist
+
+#      - name: Generate SSL Key for JWT
+#        run: php bin/console lexik:jwt:generate-keypair
+#
+#      - name: Migrate database
+#        run: php bin/console d:m:m --no-interaction --env=test
+#
+#      - name: Loading fixtures
+#        run: php bin/console d:f:l --no-interaction --env=test
 
       - name: Run tests
         env:
