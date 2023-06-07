@@ -48,6 +48,13 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction --prefer-dist
 
+
+#      - name: Set up Docker
+#        uses: docker/setup-buildx-action@v1
+#
+#      - name: Build Docker image
+#        run: docker build --cache-from myapp:latest --tag myapp:latest .
+#
 #      - name: Generate SSL Key for JWT
 #        run: php bin/console lexik:jwt:generate-keypair
 #
@@ -62,3 +69,18 @@ jobs:
           MONGODB_URI: mongodb://localhost:27017/cqrs_test
           APP_ENV: test
         run: php vendor/bin/phpunit --configuration phpunit.xml.dist
+
+#      - name: Run PHPStan
+#        run: vendor/bin/phpstan analyze
+#
+#      - name: Run PHPCS
+#        run: vendor/bin/phpcs --standard=PSR12 src/
+#
+#      - name: Generate Code Coverage
+#        run: vendor/bin/phpunit --coverage-clover=coverage.xml
+#
+#      - name: Upload Code Coverage
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: code-coverage
+#          path: coverage.xml
