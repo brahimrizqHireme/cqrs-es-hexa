@@ -18,13 +18,11 @@ jobs:
 
     services:
       mongodb:
-        build:
-          context: .
-          dockerfile: docker-compose-test.yml
+        image: mongo:6.0
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongo --eval 'printjson(db.serverStatus())'" --health-interval 10s --health-timeout 5s --health-retries 3
+          --health-cmd "mongosh --eval 'db.serverStatus()'" --health-interval 10s --health-timeout 5s --health-retries 3
 
     steps:
       - name: Checkout code
@@ -36,13 +34,13 @@ jobs:
           php-version: ${{ matrix.php-version }}
 
       - name: Start MongoDB container
-        run: docker-compose up -d
+        run: docker-compose -f docker-compose-test.yml up -d
 
       - name: Wait for MongoDB
-        run: docker-compose -f docker-compose-test.yml exec mongodb bash -c 'while ! mongo --eval "printjson(db.serverStatus())"; do sleep 1; done'
+        run: docker-compose -f docker-compose-test.yml exec mongodb bash -c 'until mongosh --eval "db.serverStatus()" | grep "MongoDB Server"; do sleep 1; done'
 
-#      - name: Install MongoDB PHP library
-#        run: composer require mongodb/mongodb
+      - name: Install MongoDB PHP library
+        run: composer require mongodb/mongodb
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
