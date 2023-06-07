@@ -16,6 +16,7 @@ class BaseApiController extends AbstractController
             [
                 'version' => $this->getParameter('API_VERSION'),
                 'status' => 'ok',
+                'env' => $_ENV['APP_ENV']
             ],
             Response::HTTP_ACCEPTED
         );
