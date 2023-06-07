@@ -18,7 +18,9 @@ jobs:
 
     services:
       mongodb:
-        image: mongo
+        build:
+          context: .
+          dockerfile: docker-compose-test.yml
         ports:
           - 27017:27017
         options: >-
@@ -33,11 +35,17 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
 
-      - name: Install MongoDB PHP library
-        run: composer require mongodb/mongodb
+      - name: Start MongoDB container
+        run: docker-compose up -d
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+      - name: Wait for MongoDB
+        run: docker-compose -f docker-compose-test.yml exec mongodb bash -c 'while ! mongo --eval "printjson(db.serverStatus())"; do sleep 1; done'
+
+#      - name: Install MongoDB PHP library
+#        run: composer require mongodb/mongodb
+#
+#      - name: Install dependencies
+#        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run tests
         env:
