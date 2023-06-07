@@ -33,16 +33,13 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
 
-      - name: Install MongoDB extension
-        run: sudo pecl install mongodb
-
-      - name: Enable MongoDB extension
-        run: echo "extension=mongodb.so" >> ${{ phpini }}
+      - name: Install MongoDB PHP library
+        run: composer require mongodb/mongodb
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run tests
         env:
-          MONGODB_URI: mongodb://localhost:27017
-        run: composer test
+          MONGODB_URI: mongodb://localhost:27017/cqrs_test
+        run: php bin/phpunit
