@@ -39,8 +39,8 @@ jobs:
 #      - name: Wait for MongoDB
 #        run: docker exec -ti mongodb bash -c 'until mongosh --eval "db.serverStatus()" | grep "MongoDB Server"; do sleep 1; done'
 
-      - name: Install MongoDB PHP library
-        run: composer require mongodb/mongodb
+#      - name: Install MongoDB PHP library
+#        run: composer require mongodb/mongodb
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -49,4 +49,4 @@ jobs:
         env:
           MONGODB_URI: mongodb://localhost:27017/cqrs_test
           APP_ENV: test
-        run: php bin/phpunit
+        run: php vendor/bin/phpunit --configuration phpunit.xml.dist
