@@ -29,7 +29,6 @@ jobs:
     services:
       mongodb:
         image: mongo:6.0
-        container_name: mongodb
         ports:
           - 27017:27017
         options: >-
@@ -68,7 +67,7 @@ jobs:
       - name: Backup database
         run: |
           mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
-          docker ps
+          docker exec mongodb bash -c 'ls -al'
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
