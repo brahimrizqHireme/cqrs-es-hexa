@@ -67,7 +67,7 @@ jobs:
       - name: Backup database
         run: |
           mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
-          mongodump --uri "${{ env.MONGODB_URL }}" --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
+          mongodump --uri "${{ env.MONGODB_URL }}" --archive=${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
