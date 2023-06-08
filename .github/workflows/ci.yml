@@ -64,13 +64,14 @@ jobs:
         run: |
           php bin/console m:f:l --env=test --no-interaction
 
-      - name: Get MongoDB IP
-        run: echo "::set-env name=MONGODB_IP::$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)"
+
+      - name: Connect to MongoDB network
+        run: docker network connect "${{ needs.setup-mongodb.outputs.network_name }}" ${{ github.run_id }}
 
       - name: Backup database
         run: |
-          mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
-          docker exec -ti $(docker ps -qf "name=mongodb") mongodump --uri "${{ env.MONGODB_URL }}" --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
+          mkdir -p data/backup
+          docker exec -e MONGODB_URL="${{ needs.setup-mongodb.outputs.mongodb_uri }}" -w /app -v "${{ github.workspace }}:/app" php:8.2-cli sh -c 'mongodump --uri "$MONGODB_URL" --archive=/app/${BACKUP_PATH}/${BACKUP_FILE_NAME}.gz --gzip'
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
