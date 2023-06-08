@@ -37,7 +37,6 @@ jobs:
           MONGO_INITDB_ROOT_USERNAME: admin
           MONGO_INITDB_ROOT_PASSWORD: root
           MONGO_INITDB_DATABASE: cqrs_test
-          MONGODB_IP: ${{ job.services.mongodb.ports[27017] }}
 
     steps:
       - name: Checkout code
