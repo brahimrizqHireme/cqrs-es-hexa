@@ -4,7 +4,7 @@ services:
   mongodb:
     image: mongo:6.0
     container_name: mongodb
-    hostname: mongodb6
+    hostname: mongodb-test
     volumes:
       - mongodb_data:/data/db
     environment:

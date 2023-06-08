@@ -34,7 +34,7 @@ class Kernel extends BaseKernel
         $this->prepareModuleRoutes($routes);
     }
 
-    private function prepareModuleRoutes(RoutingConfigurator $routes)
+    private function prepareModuleRoutes(RoutingConfigurator $routes): void
     {
         $finder = new Finder();
         $finder->files()->in($this->getProjectDir().'/src/*/Infrastructure/Routes')->name('*.yaml');
@@ -62,7 +62,7 @@ class Kernel extends BaseKernel
         $this->prepareModuleConfig($container);
     }
 
-    private function prepareModuleConfig(ContainerConfigurator $container)
+    private function prepareModuleConfig(ContainerConfigurator $container): void
     {
         $finder = new Finder();
         $finder->files()->in($this->getProjectDir().'/src/*/Config')->name('*.yaml');

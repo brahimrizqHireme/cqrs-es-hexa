@@ -2,7 +2,6 @@
 
 namespace CQRS\Product\Domain\Model\Aggregate;
 
-use CQRS\Common\Domain\Contract\Aggregate\UuidGenerator;
 use CQRS\Common\Domain\Contract\Aggregate\AggregateRootInterface;
 use CQRS\Common\Domain\Trait\BaseAggregateTrait;
 use CQRS\Product\Application\ValueObject\ProductId;

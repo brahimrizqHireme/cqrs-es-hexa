@@ -7,6 +7,7 @@
 /public/bundles/
 /var/
 /vendor/
+/data/
 ###< symfony/framework-bundle ###
 
 ### PhpStorm ###
@@ -88,6 +89,7 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/symfony,phpstorm
 ###> symfony/phpunit-bridge ###
 .phpunit.result.cache
+/.phpunit.cache/
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 

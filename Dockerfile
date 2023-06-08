@@ -85,7 +85,14 @@ COPY --chown=root:crontab ./.docker/general/cron /var/spool/cron/crontabs/root
 RUN chmod 0600 /var/spool/cron/crontabs/root
 
 RUN pecl install mongodb \
+    gnupg \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 656408E390CFB1F5 \
+    && echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/5.0 main" | tee /etc/apt/sources.list.d/mongodb-org.list \
     &&  echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongo.ini
+
+# Update packages and install MongoDB tools
+RUN apt-get update && apt-get install -y mongodb-org-tools
+
 # set working directory
 WORKDIR $APP_HOME
 
