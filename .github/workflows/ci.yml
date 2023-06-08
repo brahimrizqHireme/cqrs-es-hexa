@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Start MongoDB service
-        run: service mongod start
+        run: mongod --auth --bind_ip_all --port 27017 --fork --logpath /tmp/mongodb.log
 
       - name: Wait for MongoDB to start
         run: sleep 10s
