@@ -13,10 +13,14 @@ permissions:
 env:
   ENV_FILE: .env.test
   APP_ENV: test
+  MONGODB_URL: mongodb://localhost:27017/cqrs_test?authSource=admin
+  MONGODB_DB: cqrs_test
+  BACKUP_PATH: data/backup
+  BACKUP_FILE_NAME: mongodb.tar.gz
 
 jobs:
-  test:
-    name: Test Job
+  symfony:
+    name: Symfony cqrs
     runs-on: ubuntu-latest
     strategy:
       matrix:
