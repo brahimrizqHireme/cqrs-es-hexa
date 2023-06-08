@@ -13,7 +13,7 @@ permissions:
 env:
   ENV_FILE: .env.test
   APP_ENV: test
-  MONGODB_URL: mongodb://localhost:27017/cqrs_test
+  MONGODB_URL: mongodb://admin:root@localhost:27017/cqrs_test?authSource=admin
   MONGODB_DB: cqrs_test
   BACKUP_PATH: data/backup
   BACKUP_FILE_NAME: mongodb.tar.gz
@@ -34,6 +34,9 @@ jobs:
         options: >-
           --health-cmd "mongosh --eval 'db.serverStatus()'" --health-interval 10s --health-timeout 5s --health-retries 3
         env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: root
+          MONGO_INITDB_DATABASE: cqrs_test
           MONGODB_IP: ${{ job.services.mongodb.ports[27017] }}
 
     steps:
