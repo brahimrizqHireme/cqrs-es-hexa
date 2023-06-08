@@ -69,7 +69,9 @@ jobs:
       - name: Backup database
         run: |
           mkdir -p data/backup
-          docker exec $(docker ps -qf "name=mongodb") mongodump --uri "mongodb://host.docker.internal:27017" --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
+          CONTAINER_ID=$(docker ps -qf "name=${{ job.services.mongodb.name }}")
+          docker exec "${CONTAINER_ID}" mongodump --uri "${{ env.MONGODB_URL }}" --archive=/data/db/backup/mongodb_dump.archive --gzip
+          docker cp "${CONTAINER_ID}:/data/db/backup/mongodb_dump.archive" "${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}.archive"
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
