@@ -34,6 +34,7 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: admin
           MONGO_INITDB_ROOT_PASSWORD: root
+          MONGO_INITDB_DATABASE: cqrs_test
 
     steps:
       - name: Checkout code
@@ -69,8 +70,8 @@ jobs:
         run: |
           mkdir -p data/backup
           CONTAINER_ID=$(docker ps -qf "name=${{ job.services.mongodb.name }}")
-          docker exec "${CONTAINER_ID}" mongodump --uri "${{ env.MONGODB_URL }}" --authenticationDatabase=admin --gzip --archive=/data/db/backup/mongodb_dump.archive  --username admin --password root
-          docker cp "${CONTAINER_ID}:/data/db/backup/mongodb_dump.archive" "${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}.archive"
+          docker exec "${CONTAINER_ID}" mongodump --uri "${{ env.MONGODB_URL }}" --authenticationDatabase=admin --gzip --archive=/var/backups/mongodb.tar.gz  --username admin --password root
+          docker cp "${CONTAINER_ID}:/var/backups/mongodb.tar.gz" "${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}"
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
