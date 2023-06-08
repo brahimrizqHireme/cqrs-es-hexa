@@ -64,6 +64,9 @@ jobs:
         run: |
           php bin/console m:f:l --env=test --no-interaction
 
+      - name: Get MongoDB IP
+        run: echo "::set-env name=MONGODB_IP::$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)"
+
       - name: Backup database
         run: |
           mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
