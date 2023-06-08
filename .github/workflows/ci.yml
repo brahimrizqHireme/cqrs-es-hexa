@@ -66,9 +66,6 @@ jobs:
         run: |
           php bin/console m:f:l --env=test --no-interaction
 
-      - name: Connect to MongoDB network
-        run: docker network connect github_network_${{ github.run_id }}
-
       - name: Backup database
         run: |
           mkdir -p ${{ env.BACKUP_PATH }}
