@@ -67,7 +67,7 @@ jobs:
       - name: Backup database
         run: |
           mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
-          docker exec mongodb bash -c 'ls -al'
+          docker exec $(docker ps -qf "name=mongodb") bash -c 'ls -al'
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
