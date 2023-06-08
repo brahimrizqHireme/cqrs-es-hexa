@@ -35,7 +35,10 @@ jobs:
           extensions: mongodb
 
       - name: Copy .env.test.local
-        run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
+        run: php -r "file_exists('${{ github.workspace }}/.env.test.local') || copy('${{ github.workspace }}/.env.test', '${{ github.workspace }}/.env.test.local');"
+
+      - name: Debug Environment Variables
+        run: printenv
 
       - name: Cache Composer packages
         uses: actions/cache@v2
