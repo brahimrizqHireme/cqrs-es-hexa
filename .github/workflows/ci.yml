@@ -64,6 +64,8 @@ jobs:
         run: |
           php bin/console m:f:l --env=test --no-interaction
 
+      - name: List Docker networks
+        run: docker network ls
 
       - name: Connect to MongoDB network
         run: docker network connect "${{ needs.setup-mongodb.outputs.network_name }}" ${{ github.run_id }}
