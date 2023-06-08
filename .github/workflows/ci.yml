@@ -69,7 +69,7 @@ jobs:
       - name: Backup database
         run: |
           mkdir -p data/backup
-          docker exec -ti $(docker ps -qf "name=mongodb") sh -c 'mongodump --host localhost:27017 --uri "$MONGODB_URL" --archive=/data/backup/mongodb.tar.gz --gzip'
+          docker exec $(docker ps -qf "name=mongodb") mongodump --host localhost:27017 --uri "$MONGODB_URL" --archive=/data/backup/mongodb.tar.gz --gzip
 
         shell: /usr/bin/bash -e {0}
         env:
