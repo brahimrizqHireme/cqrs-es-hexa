@@ -28,14 +28,14 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:latest
+        image: mongo:6.0
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.serverStatus()'" --health-interval 10s --health-timeout 5s --health-retries 3
         env:
           MONGO_INITDB_ROOT_USERNAME: admin
           MONGO_INITDB_ROOT_PASSWORD: root
-          MONGO_INITDB_DATABASE: cqrs_test
-        options: "--health-cmd 'mongosh --eval \"db.serverStatus()\"' --health-interval 10s --health-timeout 5s --health-retries 3"
 
     steps:
       - name: Checkout code
