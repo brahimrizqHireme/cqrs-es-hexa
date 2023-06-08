@@ -46,9 +46,6 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: mongodb
 
-      - name: Copy .env.test
-        run: cp ${{ env.ENV_FILE }} .env
-
       - name: Debug Environment Variables
         run: printenv
 
@@ -85,5 +82,10 @@ jobs:
           name: database-backup
           path: ${{ env.BACKUP_PATH }}
 
+      - name: Ls dir
+        run: ls -al data/backup
+
       - name: Run tests
         run: php vendor/bin/phpunit --configuration phpunit.xml.dist
+        env:
+          APP_ENV: test
