@@ -40,8 +40,8 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: mongodb
 
-      - name: Copy .env.test.local
-        run: php -r "file_exists('${{ github.workspace }}/.env.test.local') || copy('${{ github.workspace }}/.env.test', '${{ github.workspace }}/.env.test.local');"
+      - name: Copy .env.test
+        run: cp ${{ env.ENV_FILE }} .env
 
       - name: Debug Environment Variables
         run: printenv
