@@ -25,11 +25,10 @@ jobs:
     strategy:
       matrix:
         php-version: [8.2]
-        mongodb-version: [6.0]
 
     services:
       mongodb:
-        image: mongo:${{ matrix.mongodb-version }}
+        image: mongo:6.0
         ports:
           - 27017:27017
         options: >-
@@ -38,12 +37,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Start MongoDB service
-        run: mongod --auth --bind_ip_all --port 27017 --fork --logpath /tmp/mongodb.log
-
-      - name: Wait for MongoDB to start
-        run: sleep 10s
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -74,7 +67,7 @@ jobs:
       - name: Backup database
         run: |
           mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
-          mongodump --uri "${{ env.MONGODB_URL }}" --archive=${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
+          docker exec mongodb mongodump --uri "${{ env.MONGODB_URL }}" --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
