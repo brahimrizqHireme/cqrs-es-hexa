@@ -7,6 +7,12 @@ on:
   pull_request:
     branches:
       - main
+permissions:
+  contents: read
+
+env:
+  ENV_FILE: .env.test
+  APP_ENV: test
 
 jobs:
   test:
@@ -35,7 +41,7 @@ jobs:
           extensions: mongodb
 
       - name: Copy .env.test.local
-        run: php -r "file_exists('${{ github.workspace }}/.env.test') || copy('${{ github.workspace }}/.env.test', '${{ github.workspace }}/.env.test');"
+        run: php -r "file_exists('${{ github.workspace }}/.env.test.local') || copy('${{ github.workspace }}/.env.test', '${{ github.workspace }}/.env.test.local');"
 
       - name: Debug Environment Variables
         run: printenv
