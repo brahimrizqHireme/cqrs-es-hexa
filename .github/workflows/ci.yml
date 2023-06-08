@@ -68,9 +68,12 @@ jobs:
 
       - name: Backup database
         run: |
-          mkdir -p ${{ env.BACKUP_PATH }}
-          docker exec $(docker ps -qf "name=mongodb") mongodump --host $MONGODB_IP --uri "${{ env.MONGODB_URL }}" --archive=${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
+          mkdir -p data/backup
+          docker exec -ti $(docker ps -qf "name=mongodb") sh -c 'mongodump --host localhost:27017 --uri "$MONGODB_URL" --archive=/data/backup/mongodb.tar.gz --gzip'
 
+        shell: /usr/bin/bash -e {0}
+        env:
+          MONGODB_URL: ${{ env.MONGODB_URL }}
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
         with:
