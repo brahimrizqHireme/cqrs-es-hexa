@@ -70,7 +70,7 @@ jobs:
 
       - name: Backup database
         run: |
-          mkdir -p data/backup
+          mkdir -p ${{ env.BACKUP_PATH }}
           docker exec -e MONGODB_URL="${{ needs.setup-mongodb.outputs.mongodb_uri }}" -w /app -v "${{ github.workspace }}:/app" php:8.2-cli sh -c 'mongodump --uri "$MONGODB_URL" --archive=/app/${BACKUP_PATH}/${BACKUP_FILE_NAME}.gz --gzip'
 
       - name: Upload backup as artifact
