@@ -33,6 +33,8 @@ jobs:
           - 27017:27017
         options: >-
           --health-cmd "mongosh --eval 'db.serverStatus()'" --health-interval 10s --health-timeout 5s --health-retries 3
+        env:
+          MONGODB_IP: ${{ job.services.mongodb.ports[27017] }}
 
     steps:
       - name: Checkout code
@@ -70,7 +72,7 @@ jobs:
       - name: Backup database
         run: |
           mkdir -p ${{ env.BACKUP_PATH }}
-          docker exec -e MONGODB_URL="${{ needs.setup-mongodb.outputs.mongodb_uri }}" -w /app -v "${{ github.workspace }}:/app" php:8.2-cli sh -c 'mongodump --uri "$MONGODB_URL" --archive=/app/${BACKUP_PATH}/${BACKUP_FILE_NAME}.gz --gzip'
+          docker exec $(docker ps -qf "name=mongodb") mongodump --host $MONGODB_IP --uri "${{ env.MONGODB_URL }}" --archive=${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --gzip
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v2
