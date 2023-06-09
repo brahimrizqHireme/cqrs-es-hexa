@@ -62,10 +62,18 @@ class ProductTest extends WebTestCase
     public function testApiResult()
     {
         $this->client->request('GET', '/');
+        $response = $this->client->getResponse();
+        $responseData = json_decode($response->getContent(), true);
+
+        echo sprintf(
+            "\n%s %s => %d:\n%s",
+            $this->client->getRequest()->getMethod(),
+            $this->client->getRequest()->getUri(),
+            $this->client->getResponse()->getStatusCode(),
+            $response->getContent()
+        );
 
         $this->assertEquals(202, $this->client->getResponse()->getStatusCode());
-
-        $responseData = json_decode($this->client->getResponse()->getContent(), true);
 
         $this->assertIsArray($responseData);
         $this->assertArrayHasKey('version', $responseData);
