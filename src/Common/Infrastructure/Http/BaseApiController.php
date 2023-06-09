@@ -18,7 +18,7 @@ class BaseApiController extends AbstractController
                 'status' => 'ok',
                 'env' => $_ENV['APP_ENV']
             ],
-            Response::HTTP_ACCEPTED
+            Response::HTTP_OK
         );
     }
 
