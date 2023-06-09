@@ -86,7 +86,7 @@ jobs:
         run: ls -al data/backup
 
       - name: Run tests
-        run: php vendor/bin/phpunit --configuration phpunit.xml.dist > test.log 2>&1
+        run: php vendor/bin/phpunit --configuration phpunit.xml.dist &> test.log
         env:
           APP_ENV: test
 
