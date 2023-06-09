@@ -31,10 +31,6 @@ jobs:
         image: mongo:6.0
         ports:
           - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: admin
-          MONGO_INITDB_ROOT_PASSWORD: root
-          MONGO_INITDB_DATABASE: cqrs_test
 
     steps:
       - name: Checkout code
@@ -70,7 +66,7 @@ jobs:
         run: |
           mkdir -p data/backup
           CONTAINER_ID=$(docker ps -qf "name=${{ job.services.mongodb.name }}")
-          docker exec "${CONTAINER_ID}" mongodump --uri "${{ env.MONGODB_URL }}" --authenticationDatabase=admin --gzip --archive=/var/backups/mongodb.tar.gz  --username admin --password root
+          docker exec "${CONTAINER_ID}" mongodump --uri "${{ env.MONGODB_URL }}" --gzip --archive=/var/backups/mongodb.tar.gz --db=${MONGODB_DB}
           docker cp "${CONTAINER_ID}:/var/backups/mongodb.tar.gz" "${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}"
 
       - name: Upload backup as artifact
@@ -92,3 +88,32 @@ jobs:
         run: php vendor/bin/phpunit --configuration phpunit.xml.dist
         env:
           APP_ENV: test
+
+#      - name: Set up Docker
+#        uses: docker/setup-buildx-action@v1
+#
+#      - name: Build Docker image
+#        run: docker build --cache-from myapp:latest --tag myapp:latest .
+#
+#      - name: Generate SSL Key for JWT
+#        run: php bin/console lexik:jwt:generate-keypair
+#
+#      - name: Migrate database
+#        run: php bin/console d:m:m --no-interaction --env=test
+#
+#      - name: Loading fixtures
+#        run: php bin/console d:f:l --no-interaction --env=test
+#      - name: Run PHPStan
+#        run: vendor/bin/phpstan analyze
+#
+#      - name: Run PHPCS
+#        run: vendor/bin/phpcs --standard=PSR12 src/
+#
+#      - name: Generate Code Coverage
+#        run: vendor/bin/phpunit --coverage-clover=coverage.xml
+#
+#      - name: Upload Code Coverage
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: code-coverage
+#          path: coverage.xml
