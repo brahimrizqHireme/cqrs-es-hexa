@@ -47,7 +47,7 @@ jobs:
           extensions: mongodb
 
       - name: Copy .env to .env.test
-        run: cp .env .env.test
+        run: cp .env.test .env
 
       - name: Debug .env.test
         run: cat .env.test
