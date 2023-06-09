@@ -22,10 +22,9 @@ class ProductTest extends KernelTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
         self::bootKernel();
         $this->container = self::getContainer();
-        $this->client = HttpClient::create(['base_uri' => 'http://nginx:80']);
+        $this->client = HttpClient::create(['base_uri' => sprintf('http://%s', $_ENV['API_HOST'])]);
     }
 
     private function sendARequest(
