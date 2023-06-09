@@ -13,6 +13,7 @@ permissions:
 env:
   ENV_FILE: .env.test
   APP_ENV: test
+  APP_DEBUG: true
   MONGODB_URL: mongodb://localhost:27017/cqrs_test
   MONGODB_DB: cqrs_test
   BACKUP_PATH: data/backup
