@@ -2,9 +2,7 @@
 
 namespace CQRS\Common\Infrastructure\Cli;
 
-use CQRS\Common\Domain\Contract\Command\CommandBusInterface;
-use CQRS\Product\Application\Command\CreateProductCommand;
-use CQRS\Product\Application\ValueObject\ProductId;
+use CQRS\DataFixture\DemoFixtures;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
@@ -16,15 +14,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'mongodb:fixtures:load', aliases: ['m:f:l'], hidden: false)]
 class FixtureLoadCommand extends Command
 {
-
     public function __construct(
-        private readonly CommandBusInterface $commandBus
+        private readonly DemoFixtures $demoFixtures
     )
     {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Load data fixtures into database')
@@ -41,9 +38,9 @@ class FixtureLoadCommand extends Command
         if (!$skipDropDb) {
             $this->dropDatabase($output);
         }
-        $this->loadFixtures($output);
-        $output->writeln('<info>Fixtures loaded successfully.</info>');
 
+        $this->demoFixtures->loadFixtures();
+        $output->writeln('<info>Fixtures Finished successfully.</info>');
         return Command::SUCCESS;
     }
 
@@ -54,17 +51,5 @@ class FixtureLoadCommand extends Command
     {
         $command = $this->getApplication()->find('mongodb:database:drop');
         $command->run(new ArrayInput([]), $output);
-    }
-
-    private function loadFixtures(OutputInterface $output): void
-    {
-        for ($i = 0; $i< 10; $i++) {
-            $this->commandBus->dispatch(new CreateProductCommand([
-                'id' => $productId = ProductId::generate()->toString(),
-                'name' => 'name' . $i,
-                'description' => 'desc'.$i
-            ]));
-            $output->writeln(sprintf('<fg=yellow> Product ( %s ) was created.</>', $productId));
-        }
     }
 }

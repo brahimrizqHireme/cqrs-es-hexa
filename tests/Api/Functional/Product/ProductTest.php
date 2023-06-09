@@ -2,6 +2,10 @@
 
 namespace CQRS\Tests\Api\Functional\Product;
 
+use CQRS\Common\Domain\Helper\CommonService;
+use CQRS\Common\Infrastructure\Cli\BackupMongoDbCommand;
+use CQRS\Common\Infrastructure\Cli\DropDatabaseCommand;
+use CQRS\Common\Infrastructure\Cli\RestoreDatabaseCommand;
 use Psr\Container\ContainerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -14,30 +18,45 @@ class ProductTest extends WebTestCase
 {
     private ContainerInterface $container;
     private KernelBrowser $client;
-    private ResetInterface $application;
+    private string $projectDir;
+//    private ResetInterface $application;
 
-    public function runCommand(array $commands): void
+
+    protected static function single_exec($c): string
     {
-        $output = new BufferedOutput();
-        foreach ($commands as $command) {
-            $input = new ArrayInput([
-                'command' => 'app:my-command',
-                '--option' => 'value',
-                'argument' => 'argument-value',
-            ]);
-
-            $this->application->run($input, $output);
+        if (is_null($output = shell_exec($c))) {
+            throw new \Exception("Error while executing $c.");
         }
-        $output->writeln($output->fetch());
+
+        return $output;
+    }
+
+    public static function showMessage(string $message): void
+    {
+        if('quite' !== getenv('EXEC_MODE')) {
+            echo($message . PHP_EOL);
+        }
+    }
+
+    private static function restoreDb(): void
+    {
+        self::showMessage(' ----> Prepare Demo Data <---- ');
+        try {
+            self::single_exec('make restore-db');
+        } catch (\Exception $exception) {
+            echo sprintf('%s', $exception->getMessage());
+        }
     }
 
     protected function setUp(): void
     {
         $kernel = self::bootKernel();
-        $this->application = new Application('Console test', '1.0');
-        $this->container = static::getContainer();
+        $this->container = $kernel->getContainer();
+        $this->projectDir = $kernel->getProjectDir();
         $this->client = $this->container->get('test.client');
+        self::restoreDb();
         parent::setUp();
+
     }
 
     public function testApiResult()

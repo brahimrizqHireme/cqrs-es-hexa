@@ -6,6 +6,9 @@ class CommonService
 {
     const CLI = 'cli';
     const PROD = 'prod';
+    const DEV = 'dev';
+    const TEST = 'test';
+
     public static function getClientIpAdd()
     {
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -21,6 +24,16 @@ class CommonService
     public static function isProdEnv(): bool
     {
         return self::PROD === $_ENV['APP_ENV'];
+    }
+
+    public static function isDev(): bool
+    {
+        return self::DEV === $_ENV['APP_ENV'];
+    }
+
+    public static function isTest(): bool
+    {
+        return self::TEST === $_ENV['APP_ENV'];
     }
 
     public static function getClientDataFromServer(): array

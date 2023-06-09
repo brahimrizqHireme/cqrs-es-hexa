@@ -27,14 +27,7 @@ class BackupMongoDbCommand extends Command
     {
         $fileName = $_ENV['BACKUP_FILE_NAME'];
         $outputFile = sprintf('%s/%s/%s', $this->projectDir, $_ENV['BACKUP_PATH'], $fileName);
-
-        $command = sprintf(
-            'docker exec cqrs-mongodb mongodump --uri "%s" --archive=/var/backups/%s --gzip',
-            $_ENV['MONGODB_URL'],
-            $fileName
-        );
-
-        $process = Process::fromShellCommandline($command);
+        $process = Process::fromShellCommandline('make backup-db');
         $process->run();
 
         if (!$process->isSuccessful()) {
@@ -42,17 +35,6 @@ class BackupMongoDbCommand extends Command
             return Command::FAILURE;
         }
 
-        $command = sprintf('docker cp cqrs-mongodb:/var/backups/%s %s', $fileName, $outputFile);
-        $process = Process::fromShellCommandline($command);
-        $process->run();
-
-        dd($process->getErrorOutput());
-        if (!$process->isSuccessful()) {
-            $output->writeln('<error>An error occurred while coping MongoDB collections.</error>');
-            return Command::FAILURE;
-        }
-
-        shell_exec(sprintf('chmod -Rf 777 %s/data/db/*', $_SERVER['APP_HOME']));
         $output->writeln(sprintf('<info>MongoDB backup successfully created into file: %s </info>', $outputFile));
         return Command::SUCCESS;
     }

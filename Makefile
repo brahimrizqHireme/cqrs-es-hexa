@@ -18,6 +18,7 @@ PROJECT_NAME := -p ${COMPOSE_PROJECT_NAME}
 OPENSSL_BIN := $(shell which openssl)
 INTERACTIVE := $(shell [ -t 0 ] && echo 1)
 ERROR_ONLY_FOR_HOST = @printf "\033[33mThis command for host machine\033[39m\n"
+ERROR_ONLY_FOR_CONTAINER = @printf "\033[33mThis command inside container only. \033[39m\n"
 .DEFAULT_GOAL := help
 ifneq ($(INTERACTIVE), 1)
 	OPTION_T := -T
@@ -31,6 +32,29 @@ COMMON_ENTRY=HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) WEB_PORT_HTTP=$(WEB_PORT_
 help: ## Shows available commands with description
 	@echo "\033[34mList of available commands:\033[39m"
 	@grep -E '^[a-zA-Z-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "[32m%-27s[0m %s\n", $$1, $$2}'
+
+
+
+backup-db: ## BackUp database to file file
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
+	mongodump --uri "${MONGODB_URL}" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --db=${MONGODB_DB}
+	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
+else
+	@make exec-bash cmd="mongodump --uri \"${MONGODB_URL}\" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+endif
+	@echo "\033[34m Backup was created \033[39m"
+
+restore-db: ## Restore database from file
+	@if [ ! -f "$(BACKUP_PATH)/${BACKUP_FILE_NAME}" ]; then \
+		echo "Backup file not found: $(BACKUP_PATH)"; \
+		exit 1; \
+	fi
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
+	mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"
+else
+	@make exec-bash cmd='mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
+endif
+	@echo "\033[33m Database was restored \033[39m"
 
 build-dev: ## Build dev environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
@@ -128,7 +152,7 @@ env-staging: ## Creates cached config file .env.local.php (usually for staging e
 	@make exec cmd="composer dump-env staging"
 
 ssh: ## Get bash inside symfony docker container
-ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	$(COMMON_ENTRY) docker-compose $(PROJECT_NAME) exec $(OPTION_T) $(PHP_USER) symfony bash
 else
 	$(ERROR_ONLY_FOR_HOST)

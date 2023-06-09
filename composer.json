@@ -70,7 +70,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "CQRS\\Tests\\": "tests/"
+            "CQRS\\Tests\\": "tests/",
+            "CQRS\\DataFixture\\" : "data/Fixture"
         }
     },
     "replace": {
