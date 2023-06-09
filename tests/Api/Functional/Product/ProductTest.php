@@ -5,6 +5,7 @@ namespace CQRS\Tests\Api\Functional\Product;
 use CQRS\Kernel;
 use Psr\Container\ContainerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -21,11 +22,13 @@ class ProductTest extends KernelTestCase
 
     protected function setUp(): void
     {
+
         parent::setUp();
         self::bootKernel();
         $this->container = self::getContainer();
-        $baseUrl = $_SERVER['BASE_URL'] ?? 'http://localhost:80';
-        $this->client = HttpClient::create(['base_uri' => $baseUrl]);
+        $currentHost = $_SERVER['HTTP_HOST'];
+        dd($currentHost);
+        $this->client = HttpClient::create();
     }
 
     private function sendARequest(
@@ -64,7 +67,7 @@ class ProductTest extends KernelTestCase
     public function testApiResult(): void
     {
         $responseData = $this->sendARequest(
-            '/',
+            '/api/v1',
             'GET',
             [],
             [],
