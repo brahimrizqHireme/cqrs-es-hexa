@@ -86,20 +86,7 @@ jobs:
         run: ls -al data/backup
 
       - name: Run tests
-        run: php vendor/bin/phpunit --configuration phpunit.xml.dist &> test.log
-        env:
-          APP_ENV: test
-
-      - name: Display logs
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const fs = require('fs');
-            const logs = fs.readFileSync('test.log', 'utf-8');
-            console.log(logs);
-
-      - name: Display error output
-        run: cat test.log
+        run: php vendor/bin/phpunit --configuration phpunit.xml.dist
 
 #      - name: Set up Docker
 #        uses: docker/setup-buildx-action@v1
