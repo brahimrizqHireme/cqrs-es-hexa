@@ -88,8 +88,13 @@ jobs:
       - name: Ls cache
         run: ls -al var/log
 
+      - name: Debug PHP Host
+        run: |
+          php -r "echo gethostname();"
+
       - name: Run tests
         run: php vendor/bin/phpunit --configuration phpunit.xml.dist
+
 
 #      - name: Set up Docker
 #        uses: docker/setup-buildx-action@v1
