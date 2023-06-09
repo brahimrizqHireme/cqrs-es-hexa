@@ -46,6 +46,15 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: mongodb
 
+      - name: Copy .env to .env.test
+        run: cp .env .env.test
+
+      - name: Debug .env.test
+        run: cat .env.test
+
+      - name: Debug2 .env
+        run: cat .env
+
       - name: Debug Environment Variables
         run: printenv
 
