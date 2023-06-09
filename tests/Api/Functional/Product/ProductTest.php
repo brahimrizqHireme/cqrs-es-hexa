@@ -54,7 +54,7 @@ class ProductTest extends WebTestCase
         $this->container = $kernel->getContainer();
         $this->projectDir = $kernel->getProjectDir();
         $this->client = $this->container->get('test.client');
-        self::restoreDb();
+//        self::restoreDb();
         parent::setUp();
 
     }
