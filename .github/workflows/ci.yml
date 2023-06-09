@@ -85,6 +85,9 @@ jobs:
       - name: Ls dir
         run: ls -al data/backup
 
+      - name: Ls cache
+        run: ls -al var/cache
+
       - name: Run tests
         run: php vendor/bin/phpunit --configuration phpunit.xml.dist
 
