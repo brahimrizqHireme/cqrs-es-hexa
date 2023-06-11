@@ -37,7 +37,7 @@ jobs:
         - ${{ github.workspace }}:/var/www/html
       options: --hostname nginx
       env:
-        BASE_URL: host.docker.internal
+        BASE_URL: nginx
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
