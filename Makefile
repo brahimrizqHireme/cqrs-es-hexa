@@ -57,7 +57,7 @@ endif
 	@echo "\033[33m Database was restored \033[39m"
 
 backup-db-ci: ## BackUp database to file file ci
-	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --archive=${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --archive=$${BACKUP_PATH}/${BACKUP_FILE_NAME}"
 	@echo "\033[34m Backup was created \033[39m"
 
 restore-db-ci: ## Restore database from file ci
