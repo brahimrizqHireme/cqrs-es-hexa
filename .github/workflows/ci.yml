@@ -35,7 +35,7 @@ jobs:
         - 8000:80
       volumes:
         - ${{ github.workspace }}:/var/www/html
-#      options: --hostname nginx
+      options: --hostname nginx
 
     steps:
       - name: Checkout code
