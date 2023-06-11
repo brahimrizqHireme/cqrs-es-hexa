@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
+    wget \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -21,26 +23,21 @@ RUN docker-php-ext-install pdo_mysql mysqli zip exif opcache
 # Install MongoDB extension
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
-# Install MongoDB tools
-RUN apt-get update && apt-get install -y wget gnupg && \
-    wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add - && \
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/debian buster/mongodb-org/5.0 main" | tee /etc/apt/sources.list.d/mongodb-org-5.0.list && \
-    apt-get update && apt-get install -y mongodb-database-tools && \
-    rm -rf /var/lib/apt/lists/*
+RUN wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/debian buster/mongodb-org/6.0 main" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \
+    apt-get update && apt-get install -y mongodb-database-tools
 
 # Set working directory
 WORKDIR $APP_HOME
 
 # Copy source files
 COPY . $APP_HOME/
-
+COPY .env.test .env
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-# Copy only the necessary files for Composer
-#COPY composer.json composer.lock ./
 
 # Install composer dependencies
-RUN composer install --optimize-autoloader --no-interaction --no-progress
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --no-progress > /dev/null 2>&1
 
 # Copy nginx configuration
 COPY ./.docker/ci/nginx.conf /etc/nginx/nginx.conf
@@ -54,6 +51,7 @@ COPY .docker/ci/php.ini /usr/local/etc/php/conf.d/php.ini
 # Copy supervisor configuration
 COPY .docker/ci/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 
+RUN rm -rf .docker README.md
 # Fix permissions
 RUN chown -R www-data:www-data var/
 
@@ -62,4 +60,3 @@ EXPOSE 80
 
 # Start supervisor
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
-
