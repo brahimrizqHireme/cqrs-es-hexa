@@ -57,9 +57,12 @@ jobs:
         run: |
           composer install --prefer-dist --no-progress --no-interaction --prefer-dist
 
-      - name: Debug Nginx error log
+      - name: Wait for services
         run: |
-          cat /var/log/nginx/error.log
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            jwilder/dockerize \
+            -wait tcp://nginx-php-8.2:80 -timeout 30s
 
       - name: Generate and load fixtures
         run: |
