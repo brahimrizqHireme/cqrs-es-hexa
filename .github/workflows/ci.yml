@@ -36,7 +36,8 @@ jobs:
       volumes:
         - ${{ github.workspace }}:/var/www/html
       options: --hostname nginx
-
+      env:
+        BASE_URL: host.docker.internal
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
