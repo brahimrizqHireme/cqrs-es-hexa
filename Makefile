@@ -40,7 +40,7 @@ ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	mongodump --uri "${MONGODB_URL}" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --db=${MONGODB_DB}
 	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
 else
-	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
 endif
 	@echo "\033[34m Backup was created \033[39m"
 
@@ -57,9 +57,8 @@ endif
 	@echo "\033[33m Database was restored \033[39m"
 
 backup-db-ci: ## BackUp database to file file ci
-	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --archive=${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --archive=${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME}"
 	@echo "\033[34m Backup was created \033[39m"
-
 
 restore-db-ci: ## Restore database from file ci
 	docker exec nginx-php-8.2 sh -c ='mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
