@@ -1,6 +1,6 @@
 #!make
 include .env
-.SILENT:
+#.SILENT:
 # Determine if .env.local file exist
 ifneq ("$(wildcard .env.local)", "")
 	include .env.local
