@@ -41,6 +41,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Show container logs
+        run: docker logs nginx-php-8.2
+
       - name: Copy .env.test to .env
         run: cp .env.test .env
 
