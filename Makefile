@@ -292,6 +292,9 @@ messenger-setup-transports: ## Initializes transports for Symfony Messenger bund
 phpunit: ## Runs PhpUnit tests
 	@make exec-bash cmd="rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist"
 
+phpunit-ci: ## Runs PhpUnit tests
+	docker exec nginx-php-8.2 sh -c 'rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist'
+
 report-code-coverage: ## Updates code coverage on coveralls.io. Note: COVERALLS_REPO_TOKEN should be set on CI side.
 	@make exec-bash cmd="export COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN} && php ./vendor/bin/php-coveralls -v --coverage_clover reports/clover.xml --json_path reports/coverals.json"
 
