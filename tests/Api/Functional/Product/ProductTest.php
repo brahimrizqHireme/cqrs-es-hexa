@@ -25,9 +25,7 @@ class ProductTest extends KernelTestCase
         parent::setUp();
         self::bootKernel();
         $this->container = self::getContainer();
-        echo "Server Name: " . $_SERVER['SERVER_NAME'] . "\n";
-        echo "Container Hostname: " . gethostname() . "\n";
-        $this->client = HttpClient::create(['base_uri' => $_SERVER['HTTP_BASE_URI']]);
+        $this->client = HttpClient::create(['base_uri' => sprintf('http://%s', gethostname())]);
     }
 
     private function sendARequest(
