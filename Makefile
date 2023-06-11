@@ -40,7 +40,7 @@ ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	mongodump --uri "${MONGODB_URL}" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --db=${MONGODB_DB}
 	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
 else
-	@make exec-bash cmd="mongodump --uri \"${MONGODB_URL}\" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
 endif
 	@echo "\033[34m Backup was created \033[39m"
 
@@ -52,7 +52,7 @@ restore-db: ## Restore database from file
 ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"
 else
-	@make exec-bash cmd='mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
+	docker exec nginx-php-8.2 sh -c 'mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
 endif
 	@echo "\033[33m Database was restored \033[39m"
 
@@ -145,6 +145,10 @@ restart-test: stop-test start-test ## Stop and start test or continuous integrat
 restart-staging: stop-staging start-staging ## Stop and start staging environment
 restart-prod: stop-prod start-prod ## Stop and start prod environment
 
+fixture-load: ## Fixture load
+	docker exec nginx-php-8.2 sh -c 'php ./bin/console m:f:l'
+
+
 env-prod: ## Creates cached config file .env.local.php (usually for prod environment)
 	@make exec cmd="composer dump-env prod"
 
@@ -228,6 +232,9 @@ composer-install-no-dev: ## Installs composer no-dev dependencies
 
 composer-install: ## Installs composer dependencies
 	@make exec-bash cmd="COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader"
+
+composer-ci: ## Installs composer dependencies
+	docker exec nginx-php-8.2 sh -c 'COMPOSER_MEMORY_LIMIT=-1 composer install --prefer-dist --no-progress --no-interaction --prefer-dist'
 
 composer-update: ## Updates composer dependencies
 	@make exec-bash cmd="COMPOSER_MEMORY_LIMIT=-1 composer update"

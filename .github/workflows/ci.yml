@@ -90,6 +90,16 @@ jobs:
 #      - name: Run tests
 #        run: php vendor/bin/phpunit --configuration phpunit.xml.dist
 
+
+      - name: Install dependencies
+        run: make composer-ci
+
+      - name: Generate and load fixtures
+        run: make fixture-load
+
+      - name: Backup database
+        run: make backup-db
+
       - name: Run tests
         run: make phpunit-ci
 
