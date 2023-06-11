@@ -22,13 +22,10 @@ class ProductTest extends KernelTestCase
 
     protected function setUp(): void
     {
-
         parent::setUp();
         self::bootKernel();
         $this->container = self::getContainer();
-        $currentHost = $_SERVER['HTTP_HOST'];
-        dd($currentHost);
-        $this->client = HttpClient::create();
+        $this->client = HttpClient::create(['base_uri' => 'http://localhost']);
     }
 
     private function sendARequest(
@@ -67,7 +64,7 @@ class ProductTest extends KernelTestCase
     public function testApiResult(): void
     {
         $responseData = $this->sendARequest(
-            '/api/v1',
+            '/',
             'GET',
             [],
             [],

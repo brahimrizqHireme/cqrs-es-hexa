@@ -18,7 +18,8 @@ RUN if [ "$BUILD_ARGUMENT_ENV" = "default" ]; then echo "Set BUILD_ARGUMENT_ENV 
     elif [ "$BUILD_ARGUMENT_ENV" = "test" ]; then echo "Building test environment."; \
     elif [ "$BUILD_ARGUMENT_ENV" = "staging" ]; then echo "Building staging environment."; \
     elif [ "$BUILD_ARGUMENT_ENV" = "prod" ]; then echo "Building production environment."; \
-    else echo "Set correct BUILD_ARGUMENT_ENV in docker build-args like --build-arg BUILD_ARGUMENT_ENV=dev. Available choices are dev,test,staging,prod." && exit 2; \
+    elif [ "$BUILD_ARGUMENT_ENV" = "ci" ]; then echo "Building ci environment."; \
+    else echo "Set correct BUILD_ARGUMENT_ENV in docker build-args like --build-arg BUILD_ARGUMENT_ENV=dev. Available choices are dev,test,ci,staging,prod." && exit 2; \
     fi
 
 # install all the dependencies and enable PHP modules
@@ -103,6 +104,27 @@ RUN apt-get update && apt-get install -y \
 
 # Install PHP extensions
 RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+# Install Nginx only for CI environment
+RUN if [ "$BUILD_ARGUMENT_ENV" = "ci" ]; then \
+    apt-get update && apt-get install -y nginx \
+    && rm /etc/nginx/sites-enabled/default \
+    && apt-get clean; \
+    fi
+
+# Configure Nginx only if in CI environment
+COPY ./.docker/ci/nginx.conf /etc/nginx/sites-available/default
+RUN if [ "$BUILD_ARGUMENT_ENV" = "ci" ]; then \
+    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default; \
+    fi
+
+## Set the Nginx entrypoint
+#RUN if [ "$BUILD_ARGUMENT_ENV" = "ci" ]; then \
+#    echo '#!/bin/bash' > /usr/local/bin/entrypoint.sh \
+#    && echo 'nginx -g "daemon off;"' >> /usr/local/bin/entrypoint.sh \
+#    && chmod +x /usr/local/bin/entrypoint.sh; \
+#    fi
+
 # set working directory
 WORKDIR $APP_HOME
 
@@ -112,7 +134,7 @@ USER ${USERNAME}
 COPY --chown=${USERNAME}:${USERNAME} . $APP_HOME/
 
 # install all PHP dependencies
-RUN if [ "$BUILD_ARGUMENT_ENV" = "dev" ] || [ "$BUILD_ARGUMENT_ENV" = "test" ]; then COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --no-progress; \
+RUN if [ "$BUILD_ARGUMENT_ENV" = "dev" ] || [ "$BUILD_ARGUMENT_ENV" = "test" ]|| [ "$BUILD_ARGUMENT_ENV" = "ci" ]; then COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --no-progress; \
     else export APP_ENV=$BUILD_ARGUMENT_ENV && COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --no-progress --no-dev; \
     fi
 
@@ -120,4 +142,13 @@ RUN if [ "$BUILD_ARGUMENT_ENV" = "dev" ] || [ "$BUILD_ARGUMENT_ENV" = "test" ]; 
 RUN if [ "$BUILD_ARGUMENT_ENV" = "staging" ] || [ "$BUILD_ARGUMENT_ENV" = "prod" ]; then composer dump-env $BUILD_ARGUMENT_ENV; \
     fi
 
+## Set the entrypoint to execute Nginx in CI environment
+#ENTRYPOINT if [ "$BUILD_ARGUMENT_ENV" = "ci" ]; then /usr/local/bin/entrypoint.sh; fi
+
 USER root
+
+# Expose the port (modify the port number as per your requirement)
+#EXPOSE 80
+
+# Set the command to run when the container starts
+#CMD ["php-fpm"]

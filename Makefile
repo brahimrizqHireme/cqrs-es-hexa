@@ -93,7 +93,7 @@ endif
 
 start-test: ## Start test or continuous integration environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	$(COMMON_ENTRY) docker-compose -f docker-compose-test-ci.yml $(PROJECT_NAME) up -d
+	$(COMMON_ENTRY) docker-compose -f docker-compose-test-ci.yml up -d
 else
 	$(ERROR_ONLY_FOR_HOST)
 endif
@@ -290,7 +290,7 @@ messenger-setup-transports: ## Initializes transports for Symfony Messenger bund
 	@make exec cmd="php bin/console messenger:setup-transports"
 
 phpunit: ## Runs PhpUnit tests
-	@make exec-bash cmd="rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist --coverage-html reports/coverage $(PHPUNIT_OPTIONS) --coverage-clover reports/clover.xml --log-junit reports/junit.xml"
+	@make exec-bash cmd="rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist"
 
 report-code-coverage: ## Updates code coverage on coveralls.io. Note: COVERALLS_REPO_TOKEN should be set on CI side.
 	@make exec-bash cmd="export COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN} && php ./vendor/bin/php-coveralls -v --coverage_clover reports/clover.xml --json_path reports/coverals.json"
