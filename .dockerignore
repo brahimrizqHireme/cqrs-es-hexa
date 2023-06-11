@@ -12,6 +12,7 @@ docker-compose.yml
 docker-compose.yaml
 .phpunit.result.cache
 index.nginx-debian.html
+README.md
 # Ignore Symfony cache and logs
 /var/cache/*
 /var/log/*
