@@ -35,6 +35,7 @@ jobs:
         - 80:80
       volumes:
         - ${{ github.workspace }}:/var/www/html
+        - /var/run/docker.sock:/var/run/docker.sock
       options: --hostname nginx-php-8.2
 
     steps:
