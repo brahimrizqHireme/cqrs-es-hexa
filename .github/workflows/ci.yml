@@ -35,7 +35,6 @@ jobs:
         - 80:80
       volumes:
         - ${{ github.workspace }}:/var/www/html
-        - /var/run/docker.sock:/var/run/docker.sock
       options: --hostname nginx-php-8.2
 
     steps:
@@ -64,6 +63,10 @@ jobs:
             -v /var/run/docker.sock:/var/run/docker.sock \
             jwilder/dockerize \
             -wait tcp://nginx-php-8.2:80 -timeout 30s
+
+      - name: Debug Nginx error log
+        run: |
+          docker exec nginx-php-8.2 sh -c 'cat /var/log/nginx/error.log'
 
       - name: Generate and load fixtures
         run: |
