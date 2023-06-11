@@ -35,7 +35,7 @@ jobs:
         - 80:80
       volumes:
         - ${{ github.workspace }}:/var/www/html
-      options: --hostname nginx
+      options: --hostname nginx-php-8.2
 
     steps:
       - name: Checkout code
