@@ -38,7 +38,7 @@ help: ## Shows available commands with description
 backup-db: ## BackUp database to file file
 ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	mongodump --uri "${MONGODB_URL}" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --db=${MONGODB_DB}
-	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
+#	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
 else
 	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
 endif
