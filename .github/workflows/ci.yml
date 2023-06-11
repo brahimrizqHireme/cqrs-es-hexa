@@ -14,7 +14,7 @@ env:
   ENV_FILE: .env.test
   APP_ENV: test
   APP_DEBUG: true
-  MONGODB_URL: mongodb://localhost:27017/cqrs_test
+  MONGODB_URL: mongodb://mongodb:27017/cqrs_test
   MONGODB_DB: cqrs_test
   BACKUP_PATH: data/backup
   BACKUP_FILE_NAME: mongodb.tar.gz
@@ -34,7 +34,7 @@ jobs:
       ports:
         - 80:80
       volumes:
-        - .:/var/www/html
+        - ${{ github.workspace }}:/var/www/html
 
     steps:
       - name: Checkout code
