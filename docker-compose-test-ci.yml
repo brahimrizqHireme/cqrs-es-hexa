@@ -15,9 +15,9 @@ services:
 
   symfony:
     image: brahimhireme/php-cqrs:1.0.0
-    build:
-      context: .
-      dockerfile: .docker/ci/Dockerfile
+#    build:
+#      context: .
+#      dockerfile: .docker/ci/Dockerfile
     hostname: nginx-php-8.2
     container_name: nginx-php-8.2
     ports:
