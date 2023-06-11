@@ -18,6 +18,7 @@ PROJECT_NAME := -p ${COMPOSE_PROJECT_NAME}
 OPENSSL_BIN := $(shell which openssl)
 INTERACTIVE := $(shell [ -t 0 ] && echo 1)
 ERROR_ONLY_FOR_HOST = @printf "\033[33mThis command for host machine\033[39m\n"
+ERROR_ONLY_FOR_CONTAINER = @printf "\033[33mThis command inside container only. \033[39m\n"
 .DEFAULT_GOAL := help
 ifneq ($(INTERACTIVE), 1)
 	OPTION_T := -T
@@ -32,7 +33,38 @@ help: ## Shows available commands with description
 	@echo "\033[34mList of available commands:\033[39m"
 	@grep -E '^[a-zA-Z-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "[32m%-27s[0m %s\n", $$1, $$2}'
 
-build: ## Build dev environment
+
+
+backup-db: ## BackUp database to file file
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
+	mongodump --uri "${MONGODB_URL}" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --db=${MONGODB_DB}
+	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
+else
+	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+endif
+	@echo "\033[34m Backup was created \033[39m"
+
+restore-db: ## Restore database from file
+	@if [ ! -f "$(BACKUP_PATH)/${BACKUP_FILE_NAME}" ]; then \
+		echo "Backup file not found: $(BACKUP_PATH)"; \
+		exit 1; \
+	fi
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
+	mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"
+else
+	@make exec-bash cmd='mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
+endif
+	@echo "\033[33m Database was restored \033[39m"
+
+backup-db-ci: ## BackUp database to file file ci
+	docker exec nginx-php-8.2 sh -c "mkdir -p ${BACKUP_PATH} && mongodump --uri \"${MONGODB_URL}\" --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+	@echo "\033[34m Backup was created \033[39m"
+
+restore-db-ci: ## Restore database from file ci
+	docker exec nginx-php-8.2 sh -c ='mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
+	@echo "\033[33m Database was restored \033[39m"
+
+build-dev: ## Build dev environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
 	$(COMMON_ENTRY) docker-compose -f docker-compose.yml build
 else
@@ -62,14 +94,14 @@ endif
 
 start: ## Start dev environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	$(COMMON_ENTRY) docker-compose -f docker-compose.yml $(PROJECT_NAME) up -d
+	$(COMMON_ENTRY) docker-compose -f docker-compose.yml up -d
 else
 	$(ERROR_ONLY_FOR_HOST)
 endif
 
 start-test: ## Start test or continuous integration environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	$(COMMON_ENTRY) docker-compose -f docker-compose-test-ci.yml $(PROJECT_NAME) up -d
+	$(COMMON_ENTRY) docker-compose -f docker-compose-test-ci.yml up -d
 else
 	$(ERROR_ONLY_FOR_HOST)
 endif
@@ -121,6 +153,10 @@ restart-test: stop-test start-test ## Stop and start test or continuous integrat
 restart-staging: stop-staging start-staging ## Stop and start staging environment
 restart-prod: stop-prod start-prod ## Stop and start prod environment
 
+fixture-load: ## Fixture load
+	docker exec nginx-php-8.2 sh -c 'php ./bin/console m:f:l'
+
+
 env-prod: ## Creates cached config file .env.local.php (usually for prod environment)
 	@make exec cmd="composer dump-env prod"
 
@@ -128,7 +164,7 @@ env-staging: ## Creates cached config file .env.local.php (usually for staging e
 	@make exec cmd="composer dump-env staging"
 
 ssh: ## Get bash inside symfony docker container
-ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	$(COMMON_ENTRY) docker-compose $(PROJECT_NAME) exec $(OPTION_T) $(PHP_USER) symfony bash
 else
 	$(ERROR_ONLY_FOR_HOST)
@@ -205,6 +241,9 @@ composer-install-no-dev: ## Installs composer no-dev dependencies
 composer-install: ## Installs composer dependencies
 	@make exec-bash cmd="COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader"
 
+composer-ci: ## Installs composer dependencies
+	docker exec nginx-php-8.2 sh -c 'COMPOSER_MEMORY_LIMIT=-1 composer install --prefer-dist --no-progress --no-interaction --prefer-dist'
+
 composer-update: ## Updates composer dependencies
 	@make exec-bash cmd="COMPOSER_MEMORY_LIMIT=-1 composer update"
 
@@ -266,7 +305,10 @@ messenger-setup-transports: ## Initializes transports for Symfony Messenger bund
 	@make exec cmd="php bin/console messenger:setup-transports"
 
 phpunit: ## Runs PhpUnit tests
-	@make exec-bash cmd="rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist --coverage-html reports/coverage $(PHPUNIT_OPTIONS) --coverage-clover reports/clover.xml --log-junit reports/junit.xml"
+	@make exec-bash cmd="rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist"
+
+phpunit-ci: ## Runs PhpUnit tests
+	docker exec nginx-php-8.2 sh -c 'rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist'
 
 report-code-coverage: ## Updates code coverage on coveralls.io. Note: COVERALLS_REPO_TOKEN should be set on CI side.
 	@make exec-bash cmd="export COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN} && php ./vendor/bin/php-coveralls -v --coverage_clover reports/clover.xml --json_path reports/coverals.json"

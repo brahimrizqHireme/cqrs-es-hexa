@@ -1,0 +1,42 @@
+# Ignore default files and directories
+.git
+.gitignore
+.dockerignore
+.phpunit.cache
+vendor
+build
+data/
+!data/Fixture
+node_modules
+docker-compose.yml
+docker-compose.yaml
+.phpunit.result.cache
+index.nginx-debian.html
+README.md
+# Ignore Symfony cache and logs
+/var/cache/*
+/var/log/*
+
+# Ignore environment-specific files
+/.env
+/.env.local
+/.env.*.local
+/.env.local.php
+
+# Ignore development and debugging files
+/var/data/*
+/var/sessions/*
+/.php_cs
+/.php_cs.cache
+/phpunit.xml
+/phpunit.xml.dist
+/tests
+/phpstan.neon
+/phpstan.dist.neon
+
+# Ignore IDE and editor specific files
+.idea
+.vscode
+*.swp
+*.swo
+*~

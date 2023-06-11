@@ -2,3 +2,4 @@ parameters:
   API_VERSION: '%env(API_VERSION)%'
   MONGODB_URL: '%env(MONGODB_URL)%'
   MONGODB_DB: '%env(MONGODB_DB)%'
+  MONGODB_PORT: '%env(MONGODB_PORT)%'

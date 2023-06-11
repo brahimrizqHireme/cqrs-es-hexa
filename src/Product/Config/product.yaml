@@ -1,7 +1,33 @@
 #imports:
 #  - { resource: parameters.yml }
 services:
-
     CQRS\Product\Domain\Contract\Repository\ProductRepositoryInterface:
       # the first argument is the class and the second argument is the static method
       factory: [ '@CQRS\Product\Infrastructure\External\ServiceFactory\ProductRepositoryFactory', 'create' ]
+
+doctrine_mongodb:
+#  fixtures:
+#    load: CQRS\Product\Infrastructure\DataFixtures
+  document_managers:
+    default:
+      mappings:
+        CQRS:
+          is_bundle: false
+          type: attribute
+          dir: '%kernel.project_dir%/src/Product/Domain/Model/Aggregate'
+          prefix: CQRS\Product\Domain\Model\Aggregate
+          alias: CQRS
+      mapping:
+        CQRS\Product\Domain\Model\Aggregate\Product:
+          type: document
+          collection: 'CQRS\Common\Domain\Collections::PRODUCT_COLLECTION'
+          fields:
+            id:
+              id: true
+              type: uuid
+            name:
+              type: string
+            description:
+              type: string
+
+

@@ -7,47 +7,101 @@ on:
   pull_request:
     branches:
       - main
-
 permissions:
   contents: read
 
+env:
+  ENV_FILE: .env.test
+  APP_ENV: test
+  APP_DEBUG: true
+  MONGODB_URL: mongodb://mongodb:27017/cqrs_test
+  MONGODB_DB: cqrs_test
+  BACKUP_PATH: data/backup
+  BACKUP_FILE_NAME: mongodb.tar.gz
+
 jobs:
-  test:
-    name: Test Job
+  symfony:
+    name: Symfony cqrs
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: [8.2]
-
-    services:
-      mongodb:
-        image: mongo:6.0
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.serverStatus()'" --health-interval 10s --health-timeout 5s --health-retries 3
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
+#      - name: Build the docker images
+#        run: make build-test
 
-      - name: Copy .env.test.local
-        run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
+      - name: Start the docker images
+        run: make start-test
 
-      - name: Cache Composer packages
-        uses: actions/cache@v2
-        with:
-          path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      - name: Check running cont
+        run: docker ps -a
+
+#      - name: Copy .env.test to .env
+#        run: cp .env.test .env
+#
+#      - name: Debug Environment Variables
+#        run: printenv
+#
+#      - name: Cache Composer packages
+#        uses: actions/cache@v2
+#        with:
+#          path: vendor
+#          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+#
+#      - name: Install dependencies
+#        run: |
+#          composer install --prefer-dist --no-progress --no-interaction --prefer-dist
+#
+#      - name: Wait for services
+#        run: |
+#          docker run --rm \
+#            -v /var/run/docker.sock:/var/run/docker.sock \
+#            jwilder/dockerize \
+#            -wait tcp://nginx-php-8.2:80 -timeout 30s
+#
+#      - name: Debug Nginx error log
+#        run: |
+#          docker exec nginx-php-8.2 sh -c 'cat /var/log/nginx/error.log'
+#
+#      - name: Generate and load fixtures
+#        run: |
+#          php bin/console m:f:l --env=test --no-interaction
+#
+#      - name: Backup database
+#        run: |
+#          mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
+#          mongodump --uri "${{ env.MONGODB_URL }}" --gzip --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --db=${MONGODB_DB}
+
+#      - name: Upload backup as artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: database-backup
+#          path: ${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}
+#
+#      - name: Download backup artifact
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: database-backup
+#          path: ${{ env.BACKUP_PATH }}
+#
+#      - name: Ls dir
+#        run: ls -al ${{ github.workspace }}/${{ env.BACKUP_PATH }}
+#
+#      - name: Run tests
+#        run: php vendor/bin/phpunit --configuration phpunit.xml.dist
+
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction --prefer-dist
+        run: make composer-ci
 
+      - name: Generate and load fixtures
+        run: make fixture-load
+
+      - name: Backup database
+        run: make backup-db-ci
+
+      - name: Run tests
+        run: make phpunit-ci
 
 #      - name: Set up Docker
 #        uses: docker/setup-buildx-action@v1
@@ -63,13 +117,6 @@ jobs:
 #
 #      - name: Loading fixtures
 #        run: php bin/console d:f:l --no-interaction --env=test
-
-      - name: Run tests
-        env:
-          MONGODB_URI: mongodb://localhost:27017/cqrs_test
-          APP_ENV: test
-        run: php vendor/bin/phpunit --configuration phpunit.xml.dist
-
 #      - name: Run PHPStan
 #        run: vendor/bin/phpstan analyze
 #

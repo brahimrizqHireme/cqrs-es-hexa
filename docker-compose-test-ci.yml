@@ -1,0 +1,35 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    hostname: mongodb
+    volumes:
+      - mongodb_data_test:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: cqrs_test
+    ports:
+      - 27017:27017
+    networks:
+      - symfony-app
+
+  symfony:
+    image: brahimhireme/php-cqrs:1.0.0
+#    build:
+#      context: .
+#      dockerfile: .docker/ci/Dockerfile
+    hostname: nginx-php-8.2
+    container_name: nginx-php-8.2
+    ports:
+      - 8001:80
+    volumes:
+      - .:/var/www/html
+    networks:
+      - symfony-app
+    depends_on:
+      - mongodb
+
+networks:
+  symfony-app: ~
+volumes:
+  mongodb_data_test: ~

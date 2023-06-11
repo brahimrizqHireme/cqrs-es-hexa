@@ -39,7 +39,7 @@ trait MongoDbTrait
 
     public function getCollection(string $collection): Collection
     {
-        return $this->mongoClient->selectDatabase(Database::SELECTED_DATABASE->value)->selectCollection($collection);
+        return $this->mongoClient->selectDatabase($_ENV['MONGODB_DB'])->selectCollection($collection);
     }
 
     public function update(array $criteria, array $set, array $options = []): UpdateResultInterface

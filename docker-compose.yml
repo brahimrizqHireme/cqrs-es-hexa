@@ -56,6 +56,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-symfony
     volumes:
       - .:/var/www/html:cached
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - mongodb
 #      - rabbitmq
@@ -131,3 +132,4 @@ networks:
 volumes:
   mysql_data: ~
   mongodb_data: ~
+

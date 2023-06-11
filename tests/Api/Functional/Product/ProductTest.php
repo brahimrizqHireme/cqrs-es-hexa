@@ -2,19 +2,75 @@
 
 namespace CQRS\Tests\Api\Functional\Product;
 
+use CQRS\Kernel;
+use Psr\Container\ContainerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class ProductTest extends WebTestCase
+class ProductTest extends KernelTestCase
 {
-    public function testApiResult()
+    private ContainerInterface $container;
+    private HttpClientInterface $client;
+
+    protected static function getKernelClass(): string
     {
-        $client = static::createClient();
+        return Kernel::class;
+    }
 
-        $client->request('GET', '/');
+    protected function setUp(): void
+    {
+        parent::setUp();
+        self::bootKernel();
+        $this->container = self::getContainer();
+        $this->client = HttpClient::create(['base_uri' => sprintf('http://%s', gethostname())]);
+    }
 
-        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+    private function sendARequest(
+        string $url,
+        string $method,
+        array $payload,
+        array $headers = [],
+        int $expectedStatusCode = Response::HTTP_OK,
+        bool $showResponse = false
+    ): array {
 
-        $responseData = json_decode($client->getResponse()->getContent(), true);
+        $headers['Content-Type'] = 'application/json';
+
+        $response = $this->client->request($method, $url, [
+            'json' => $payload,
+            'headers' => $headers
+        ]);
+
+        // Assert the expected status code
+        $this->assertEquals($expectedStatusCode, $response->getStatusCode());
+
+        // Optionally display the response content for debugging
+        if ($showResponse) {
+            echo sprintf(
+                "[DEBUG] Request:\n  Method: %s\n  URL: %s\n  Status Code: %d\n\nResponse Body:\n%s\n",
+                $method,
+                $url,
+                $response->getStatusCode(),
+                $response->getContent()
+            );
+        }
+
+        return $response->toArray();
+    }
+
+    public function testApiResult(): void
+    {
+        $responseData = $this->sendARequest(
+            '/',
+            'GET',
+            [],
+            [],
+            Response::HTTP_OK,
+            true
+        );
 
         $this->assertIsArray($responseData);
         $this->assertArrayHasKey('version', $responseData);
