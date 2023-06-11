@@ -62,25 +62,23 @@ jobs:
 
       - name: Backup database
         run: |
-          mkdir -p data/backup
-          CONTAINER_ID=$(docker ps -qf "name=${{ job.services.mongodb.name }}")
-          docker exec "${CONTAINER_ID}" mongodump --uri "${{ env.MONGODB_URL }}" --gzip --archive=/var/backups/mongodb.tar.gz --db=${MONGODB_DB}
-          docker cp "${CONTAINER_ID}:/var/backups/mongodb.tar.gz" "${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}"
+          mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
+          mongodump --uri "${{ env.MONGODB_URL }}" --gzip --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --db=${MONGODB_DB}
 
-      - name: Upload backup as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: database-backup
-          path: ${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}
-
-      - name: Download backup artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: database-backup
-          path: ${{ env.BACKUP_PATH }}
+#      - name: Upload backup as artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: database-backup
+#          path: ${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }}
+#
+#      - name: Download backup artifact
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: database-backup
+#          path: ${{ env.BACKUP_PATH }}
 
       - name: Ls dir
-        run: ls -al data/backup
+        run: ls -al ${{ github.workspace }}/${{ env.BACKUP_PATH }}
 
       - name: Run tests
         run: php vendor/bin/phpunit --configuration phpunit.xml.dist
