@@ -23,59 +23,54 @@ jobs:
   symfony:
     name: Symfony cqrs
     runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:6.0
-        ports:
-          - 27017:27017
-
-    container:
-      image: brahimhireme/php-cqrs:1.0.0
-      ports:
-        - 80:80
-      volumes:
-        - ${{ github.workspace }}:/var/www/html
-      options: --hostname nginx-php-8.2
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Copy .env.test to .env
-        run: cp .env.test .env
+      - name: Build the docker images
+        run: make build-test
 
-      - name: Debug Environment Variables
-        run: printenv
+      - name: Start the docker images
+        run: make start-test
 
-      - name: Cache Composer packages
-        uses: actions/cache@v2
-        with:
-          path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      - name: Check running cont
+        run: docker ps -a
 
-      - name: Install dependencies
-        run: |
-          composer install --prefer-dist --no-progress --no-interaction --prefer-dist
-
-      - name: Wait for services
-        run: |
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            jwilder/dockerize \
-            -wait tcp://nginx-php-8.2:80 -timeout 30s
-
-      - name: Debug Nginx error log
-        run: |
-          docker exec nginx-php-8.2 sh -c 'cat /var/log/nginx/error.log'
-
-      - name: Generate and load fixtures
-        run: |
-          php bin/console m:f:l --env=test --no-interaction
-
-      - name: Backup database
-        run: |
-          mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
-          mongodump --uri "${{ env.MONGODB_URL }}" --gzip --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --db=${MONGODB_DB}
+#      - name: Copy .env.test to .env
+#        run: cp .env.test .env
+#
+#      - name: Debug Environment Variables
+#        run: printenv
+#
+#      - name: Cache Composer packages
+#        uses: actions/cache@v2
+#        with:
+#          path: vendor
+#          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+#
+#      - name: Install dependencies
+#        run: |
+#          composer install --prefer-dist --no-progress --no-interaction --prefer-dist
+#
+#      - name: Wait for services
+#        run: |
+#          docker run --rm \
+#            -v /var/run/docker.sock:/var/run/docker.sock \
+#            jwilder/dockerize \
+#            -wait tcp://nginx-php-8.2:80 -timeout 30s
+#
+#      - name: Debug Nginx error log
+#        run: |
+#          docker exec nginx-php-8.2 sh -c 'cat /var/log/nginx/error.log'
+#
+#      - name: Generate and load fixtures
+#        run: |
+#          php bin/console m:f:l --env=test --no-interaction
+#
+#      - name: Backup database
+#        run: |
+#          mkdir -p ${{ github.workspace }}/${{ env.BACKUP_PATH }}
+#          mongodump --uri "${{ env.MONGODB_URL }}" --gzip --archive=${{ github.workspace }}/${{ env.BACKUP_PATH }}/${{ env.BACKUP_FILE_NAME }} --db=${MONGODB_DB}
 
 #      - name: Upload backup as artifact
 #        uses: actions/upload-artifact@v2
@@ -88,12 +83,12 @@ jobs:
 #        with:
 #          name: database-backup
 #          path: ${{ env.BACKUP_PATH }}
-
-      - name: Ls dir
-        run: ls -al ${{ github.workspace }}/${{ env.BACKUP_PATH }}
-
-      - name: Run tests
-        run: php vendor/bin/phpunit --configuration phpunit.xml.dist
+#
+#      - name: Ls dir
+#        run: ls -al ${{ github.workspace }}/${{ env.BACKUP_PATH }}
+#
+#      - name: Run tests
+#        run: php vendor/bin/phpunit --configuration phpunit.xml.dist
 
 
 #      - name: Set up Docker

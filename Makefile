@@ -86,7 +86,7 @@ endif
 
 start: ## Start dev environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	$(COMMON_ENTRY) docker-compose -f docker-compose.yml $(PROJECT_NAME) up -d
+	$(COMMON_ENTRY) docker-compose -f docker-compose.yml up -d
 else
 	$(ERROR_ONLY_FOR_HOST)
 endif

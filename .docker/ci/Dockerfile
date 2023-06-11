@@ -19,8 +19,7 @@ RUN apk update && apk add --no-cache \
     gnupg \
     autoconf \
     g++ \
-    make \
-    docker-cli
+    make
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql zip exif opcache
