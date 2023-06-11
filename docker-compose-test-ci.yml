@@ -17,8 +17,8 @@ services:
     build:
       context: .
       dockerfile: .docker/ci/Dockerfile
-    hostname: symfony
-    container_name: symfony
+    hostname: nginx-php-8.2
+    container_name: nginx-php-8.2
     ports:
       - 8001:80
     volumes:
