@@ -25,7 +25,7 @@ class ProductTest extends KernelTestCase
         parent::setUp();
         self::bootKernel();
         $this->container = self::getContainer();
-        $this->client = HttpClient::create(['base_uri' => 'http://localhost']);
+        $this->client = HttpClient::create(['base_uri' => $_SERVER['BASE_URL']]);
     }
 
     private function sendARequest(
