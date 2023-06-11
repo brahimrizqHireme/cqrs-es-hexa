@@ -35,9 +35,8 @@ jobs:
         - 8000:80
       volumes:
         - ${{ github.workspace }}:/var/www/html
-      options: --hostname nginx
-      env:
-        BASE_URL: http://nginx
+#      options: --hostname nginx
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
