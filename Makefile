@@ -1,6 +1,6 @@
 #!make
 include .env
-#.SILENT:
+.SILENT:
 # Determine if .env.local file exist
 ifneq ("$(wildcard .env.local)", "")
 	include .env.local
@@ -38,7 +38,7 @@ help: ## Shows available commands with description
 backup-db: ## BackUp database to file file
 ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	mongodump --uri "${MONGODB_URL}" --gzip --quiet --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --db=${MONGODB_DB}
-#	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
+	chmod -Rf 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}
 else
 	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
 endif
@@ -52,8 +52,17 @@ restore-db: ## Restore database from file
 ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
 	mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"
 else
-	docker exec nginx-php-8.2 sh -c 'mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
+	@make exec-bash cmd='mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
 endif
+	@echo "\033[33m Database was restored \033[39m"
+
+backup-db-ci: ## BackUp database to file file ci
+	docker exec nginx-php-8.2 sh -c "mongodump --uri \"${MONGODB_URL}\" --gzip --archive=${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME} && chmod -R 777 ${BACKUP_PATH}/${BACKUP_FILE_NAME}"
+	@echo "\033[34m Backup was created \033[39m"
+
+
+restore-db-ci: ## Restore database from file ci
+	docker exec nginx-php-8.2 sh -c ='mongorestore --uri "${MONGODB_URL}" --drop --quiet --gzip --archive=${{ github.workspace }}/${BACKUP_PATH}/${BACKUP_FILE_NAME} --nsInclude="${MONGODB_DB}.*"'
 	@echo "\033[33m Database was restored \033[39m"
 
 build-dev: ## Build dev environment

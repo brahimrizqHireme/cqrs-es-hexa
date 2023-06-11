@@ -98,7 +98,7 @@ jobs:
         run: make fixture-load
 
       - name: Backup database
-        run: make backup-db
+        run: make backup-db-ci
 
       - name: Run tests
         run: make phpunit-ci
