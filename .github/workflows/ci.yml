@@ -57,6 +57,10 @@ jobs:
         run: |
           composer install --prefer-dist --no-progress --no-interaction --prefer-dist
 
+      - name: Debug Nginx error log
+        run: |
+          cat /var/log/nginx/error.log
+
       - name: Generate and load fixtures
         run: |
           php bin/console m:f:l --env=test --no-interaction
