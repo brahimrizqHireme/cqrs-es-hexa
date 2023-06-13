@@ -1,0 +1,38 @@
+version: '3'
+services:
+  mongodb:
+    image: registry.gitlab.com/cqrs-demo-gp/cqrs-demo/cqrs-mongodb-ci:1.0.0
+    build:
+      context: .
+      dockerfile: .docker/mongodb/Dockerfile
+    container_name: mongodb-${APP_ENV}
+    hostname: mongodb-${APP_ENV}
+    volumes:
+      - mongodb_data_test:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGODB_DB}-${APP_ENV}
+    ports:
+      - 27017:27017
+    networks:
+      - symfony-app
+
+  symfony:
+    image: registry.gitlab.com/cqrs-demo-gp/cqrs-demo/cqrs-php-ci:1.0.0
+    build:
+      context: .
+      dockerfile: .docker/ci/Dockerfile
+    hostname: symfony-${APP_ENV}
+    container_name: symfony-${APP_ENV}
+    ports:
+      - 8001:80
+    volumes:
+      - .:/var/www/html
+    networks:
+      - symfony-app
+    depends_on:
+      - mongodb
+
+networks:
+  symfony-app: ~
+volumes:
+  mongodb_data_test: ~
