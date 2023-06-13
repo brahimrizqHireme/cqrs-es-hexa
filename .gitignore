@@ -7,6 +7,8 @@
 /public/bundles/
 /var/
 /vendor/
+/data/backup/
+/.phpunit.cache/
 ###< symfony/framework-bundle ###
 
 ### PhpStorm ###

@@ -56,12 +56,30 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-symfony
     volumes:
       - .:/var/www/html:cached
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - mongodb
 #      - rabbitmq
 #      - mysql
     networks:
       - symfony
+
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    restart: always
+    container_name: gitlab
+    hostname: gitlab
+    environment:
+      GITLAB_ROOT_PASSWORD: Ol3YLvnsHhwqsCWwVd/EJuZo3wf8vyipWth9CI6Ms9E=
+    ports:
+      - "81:80"
+      - "443:443"
+      - "22:22"
+      - "5005:5005"
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
 
 #  ### Cron tasks, RabbitMQ consumers
 #  supervisord:
@@ -131,3 +149,6 @@ networks:
 volumes:
   mysql_data: ~
   mongodb_data: ~
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
