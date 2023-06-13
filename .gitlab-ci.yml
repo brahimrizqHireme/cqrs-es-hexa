@@ -1,0 +1,31 @@
+stages:
+  - test
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:20.10.7-dind
+
+cache:
+  paths:
+    - vendor/
+
+before_script:
+  - docker info
+  - docker-compose --version
+  - cp .env.ci .env
+  - eval $(dotenv -f .env.ci)
+  - make build-ci
+  - make composer-install-ci
+#  - docker exec -it php-ci bin/console doctrine:database:create --if-not-exists --env=test
+#  - docker exec -it php-ci bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+test:
+  stage: test
+  image: registry.gitlab.com/cqrs-demo-gp/cqrs-demo/cqrs-php-ci:1.0.0
+  script:
+    - make phpunit-ci
+
+after_script:
+  - make stop-ci

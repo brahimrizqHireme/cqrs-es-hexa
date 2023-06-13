@@ -32,7 +32,54 @@ help: ## Shows available commands with description
 	@echo "\033[34mList of available commands:\033[39m"
 	@grep -E '^[a-zA-Z-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "[32m%-27s[0m %s\n", $$1, $$2}'
 
-build: ## Build dev environment
+
+build-ci: ## Build ci or continuous integration environment
+ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
+	$(COMMON_ENTRY) docker-compose -f docker-compose-ci.yml build
+else
+	$(ERROR_ONLY_FOR_HOST)
+endif
+
+push-ci: ## Push ci or continuous integration environment
+ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
+	$(COMMON_ENTRY) docker-compose -f docker-compose-ci.yml push
+else
+	$(ERROR_ONLY_FOR_HOST)
+endif
+
+composer-install-ci: ## Installs composer dependencies fo ci environment
+	@make exec-bash cmd="COMPOSER_MEMORY_LIMIT=-1 composer install --prefer-dist --no-progress --no-interaction"
+
+exec-bash:
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
+	@bash -c "$(cmd)"
+else
+	$(COMMON_ENTRY) docker-compose $(PROJECT_NAME) exec $(OPTION_T) $(PHP_USER) symfony-$(APP_ENV) bash -c "$(cmd)"
+endif
+
+exec:
+ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
+	@$$cmd
+else
+	$(COMMON_ENTRY) docker-compose $(PROJECT_NAME) exec $(OPTION_T) $(PHP_USER) symfony-$(APP_ENV) $$cmd
+endif
+
+phpunit-ci: ## Runs PhpUnit tests
+	@make exec-bash cmd='rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist'
+
+stop-ci: ## Stop ci or continuous integration environment
+ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
+	$(COMMON_ENTRY) docker-compose -f docker-compose-ci.yml $(PROJECT_NAME) down
+else
+	$(ERROR_ONLY_FOR_HOST)
+endif
+
+
+
+
+
+
+build-dev: ## Build dev environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
 	$(COMMON_ENTRY) docker-compose -f docker-compose.yml build
 else
@@ -169,19 +216,6 @@ else
 	$(ERROR_ONLY_FOR_HOST)
 endif
 
-exec:
-ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
-	@$$cmd
-else
-	$(COMMON_ENTRY) docker-compose $(PROJECT_NAME) exec $(OPTION_T) $(PHP_USER) symfony $$cmd
-endif
-
-exec-bash:
-ifeq ($(INSIDE_DOCKER_CONTAINER), 1)
-	@bash -c "$(cmd)"
-else
-	$(COMMON_ENTRY) docker-compose $(PROJECT_NAME) exec $(OPTION_T) $(PHP_USER) symfony bash -c "$(cmd)"
-endif
 
 exec-by-root:
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
