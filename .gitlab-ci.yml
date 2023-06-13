@@ -17,6 +17,7 @@ before_script:
   - cp .env.ci .env
   - eval $(dotenv -f .env.ci)
   - make build-ci
+  - make start-ci
   - make composer-install-ci
 #  - docker exec -it php-ci bin/console doctrine:database:create --if-not-exists --env=test
 #  - docker exec -it php-ci bin/console doctrine:migrations:migrate --no-interaction --env=test

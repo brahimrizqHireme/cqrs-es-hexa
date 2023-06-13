@@ -67,6 +67,13 @@ endif
 phpunit-ci: ## Runs PhpUnit tests
 	@make exec-bash cmd='rm -rf ./var/cache/test* && bin/console cache:warmup --env=test && ./vendor/bin/phpunit -c phpunit.xml.dist'
 
+start-ci: ## Start test or continuous integration environment
+ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
+	$(COMMON_ENTRY) docker-compose -f docker-compose-test-ci.yml $(PROJECT_NAME) up -d
+else
+	$(ERROR_ONLY_FOR_HOST)
+endif
+
 stop-ci: ## Stop ci or continuous integration environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
 	$(COMMON_ENTRY) docker-compose -f docker-compose-ci.yml $(PROJECT_NAME) down
@@ -114,12 +121,6 @@ else
 	$(ERROR_ONLY_FOR_HOST)
 endif
 
-start-test: ## Start test or continuous integration environment
-ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
-	$(COMMON_ENTRY) docker-compose -f docker-compose-test-ci.yml $(PROJECT_NAME) up -d
-else
-	$(ERROR_ONLY_FOR_HOST)
-endif
 
 start-staging: ## Start staging environment
 ifeq ($(INSIDE_DOCKER_CONTAINER), 0)
